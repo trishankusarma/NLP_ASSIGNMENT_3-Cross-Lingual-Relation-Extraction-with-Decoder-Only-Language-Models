@@ -1,0 +1,173 @@
+
+============================================================
+ENGLISH_DATASET_TRAIN : en_sft_dataset/train.jsonl
+Length of data : 56196
+Number of unique relation pairs : 24 :: Total pairs : 94222
+Top 30 labels:
+  45608  /location/location/contains
+   7198  /people/person/nationality
+   6718  /location/country/capital
+   6362  /people/person/place_lived
+   5658  /location/administrative_division/country
+   5658  /location/country/administrative_divisions
+   4950  /business/person/company
+   4941  /location/neighborhood/neighborhood_of
+   2813  /people/person/place_of_birth
+   1752  /people/deceased_person/place_of_death
+    712  /business/company/founders
+    441  /people/person/children
+    360  /business/company/place_founded
+    249  /business/company_shareholder/major_shareholder_of
+    249  /business/company/major_shareholders
+    186  /sports/sports_team_location/teams
+    186  /sports/sports_team/location
+     59  /people/person/religion
+     40  /people/ethnicity/geographic_distribution
+     39  /business/company/advisors
+     20  /people/person/ethnicity
+     20  /people/ethnicity/people
+      2  /people/person/profession
+      1  /business/company/industry
+
+NA count: 0 (0.0% of pairs)
+
+Sentence length (words): min=4, max=100, avg=37.7
+
+============================================================
+ENGLISH_DATASET_VAL : en_sft_dataset/valid.jsonl
+Length of data : 5000
+Number of unique relation pairs : 22 :: Total pairs : 8489
+Top 30 labels:
+   4032  /location/location/contains
+    643  /people/person/nationality
+    616  /location/country/capital
+    558  /location/country/administrative_divisions
+    558  /location/administrative_division/country
+    539  /people/person/place_lived
+    469  /location/neighborhood/neighborhood_of
+    466  /business/person/company
+    228  /people/person/place_of_birth
+    133  /people/deceased_person/place_of_death
+     61  /business/company/founders
+     46  /people/person/children
+     37  /business/company/place_founded
+     22  /sports/sports_team/location
+     22  /sports/sports_team_location/teams
+     21  /business/company_shareholder/major_shareholder_of
+     21  /business/company/major_shareholders
+      7  /people/person/religion
+      5  /business/company/advisors
+      3  /people/ethnicity/geographic_distribution
+      1  /people/person/ethnicity
+      1  /people/ethnicity/people
+
+NA count: 0 (0.0% of pairs)
+
+Sentence length (words): min=5, max=100, avg=37.6
+
+============================================================
+HINDI_DATASET_TRAIN : sft_dataset/hi_train.jsonl
+Parse error at pos 205393: Expecting value: line 6826 column 1 (char 205393)
+Length of data : 200
+Number of unique relation pairs : 15 :: Total pairs : 334
+Top 30 labels:
+    162  /स्थान/स्थान/शामिल_है
+     28  /व्यापार/व्यक्ति/कंपनी
+     28  /स्थान/देश/राजधानी
+     25  /लोग/व्यक्ति/रहने_का_स्थान
+     21  /स्थान/प्रशासनिक_विभाजन/देश
+     21  /स्थान/देश/प्रशासनिक_विभाजन
+     14  /लोग/व्यक्ति/राष्ट्रीयता
+     14  /स्थान/पड़ोस/का_पड़ोस
+      8  /लोग/व्यक्ति/जन्म_स्थान
+      5  /लोग/मृत_व्यक्ति/मृत्यु_का_स्थान
+      2  /लोग/व्यक्ति/बच्चे
+      2  /व्यापार/कंपनी/स्थापना_का_स्थान
+      2  /व्यापार/कंपनी/संस्थापक
+      1  /लोग/व्यक्ति/धर्म
+      1  /व्यापार/कंपनी/सलाहकार
+
+NA count: 0 (0.0% of pairs)
+
+Sentence length (words): min=8, max=86, avg=38.9
+
+============================================================
+KANADA_DATASET_TRAIN : sft_dataset/kn_train.jsonl
+Length of data : 200
+Number of unique relation pairs : 16 :: Total pairs : 332
+Top 30 labels:
+    163  /ಸ್ಥಳ/ಸ್ಥಳ/ಒಳಗೊಂಡಿದೆ
+     28  /ಸ್ಥಳ/ದೇಶ/ರಾಜಧಾನಿ
+     26  /ವ್ಯಾಪಾರ/ವ್ಯಕ್ತಿ/ಕಂಪನಿ
+     24  /ಜನರು/ವ್ಯಕ್ತಿ/ವಾಸಸ್ಥಳ
+     21  /ಸ್ಥಳ/ಆಡಳಿತಾತ್ಮಕ_ವಿಭಾಗ/ದೇಶ
+     21  /ಸ್ಥಳ/ದೇಶ/ಆಡಳಿತಾತ್ಮಕ_ವಿಭಾಗಗಳು
+     15  /ಜನರು/ವ್ಯಕ್ತಿ/ರಾಷ್ಟ್ರೀಯತೆ
+     14  /ಸ್ಥಳ/ನೆರೆಹೊರೆ/ಇದರ_ನೆರೆಹೊರೆ
+      7  /ಜನರು/ವ್ಯಕ್ತಿ/ಜನ್ಮಸ್ಥಳ
+      4  /ಜನರು/ಮೃತ_ವ್ಯಕ್ತಿ/ಮರಣ_ಸ್ಥಳ
+      2  /ಜನರು/ವ್ಯಕ್ತಿ/ಮಕ್ಕಳು
+      2  /ವ್ಯಾಪಾರ/ಕಂಪನಿ/ಸ್ಥಾಪನೆಯಾದ_ಸ್ಥಳ
+      2  /ವ್ಯಾಪಾರ/ಕಂಪನಿ/ಸ್ಥಾಪಕರು
+      1  /ಜನರು/ವ್ಯಕ್ತಿ/ಧರ್ಮ
+      1  /ಸ್ಥಳ/ದೇಶ/ರಾಜಧಾನ
+      1  /ವ್ಯಾಪಾರ/ಕಂಪನಿ/ಸಲಹೆಗಾರರು
+
+NA count: 0 (0.0% of pairs)
+
+Sentence length (words): min=8, max=67, avg=27.9
+
+============================================================
+ORIA_DATASET_TRAIN : sft_dataset/or_train.jsonl
+Length of data : 89
+Number of unique relation pairs : 17 :: Total pairs : 122
+Top 30 labels:
+     19  /location/location/contains
+     16  /people/person/place_lived
+     12  /location/country/administrative_divisions
+     11  /business/person/company
+      8  /location/country/capital
+      7  /business/company/advisors
+      7  /people/person/nationality
+      7  /people/deceased_person/place_of_death
+      6  /people/person/place_of_birth
+      6  /location/neighborhood/neighborhood_of
+      6  /location/administrative_division/country
+      5  /people/person/children
+      3  /people/person/ethnicity
+      3  /people/ethnicity/geographic_distribution
+      3  /business/company/founders
+      2  /people/person/religion
+      1  /business/company/major_shareholders
+
+NA count: 0 (0.0% of pairs)
+
+Sentence length (words): min=9, max=67, avg=30.0
+
+============================================================
+TCY_DATASET_VAL : sft_dataset/tcy_val.jsonl
+Length of data : 95
+Number of unique relation pairs : 18 :: Total pairs : 136
+Top 30 labels:
+     22  /people/person/place_lived
+     15  /location/location/contains
+     11  /people/person/nationality
+     10  /business/person/company
+     10  /location/country/administrative_divisions
+      9  /people/ethnicity/geographic_distribution
+      8  /people/person/place_of_birth
+      7  /location/administrative_division/country
+      7  /location/country/capital
+      6  /people/person/religion
+      5  /people/person/ethnicity
+      5  /people/deceased_person/place_of_death
+      5  /location/neighborhood/neighborhood_of
+      5  /business/company/advisors
+      4  /people/person/children
+      4  /business/company/founders
+      2  /business/company/major_shareholders
+      1  /business/company/place_founded
+
+NA count: 0 (0.0% of pairs)
+
+Sentence length (words): min=9, max=59, avg=30.7
