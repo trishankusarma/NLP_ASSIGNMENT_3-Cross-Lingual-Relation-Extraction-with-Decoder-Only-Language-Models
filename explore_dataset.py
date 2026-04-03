@@ -1,6 +1,8 @@
 import json
 import os
-from collections import Counter, defaultdict
+from collections import Counter
+
+from utils.utils import load_jsonl
 
 ENGLISH_DATASET_TRAIN_PATH = "en_sft_dataset/train.jsonl"
 ENGLISH_DATASET_VALID_PATH = "en_sft_dataset/valid.jsonl"
@@ -28,34 +30,6 @@ inter_lang_label_map_paths = [
     "sft_dataset/or_map.json",
     "sft_dataset/tcy_map.json"
 ]
-
-def load_jsonl(dataset_path):
-    """Handles both single-line JSONL (English) and pretty-printed JSON objects (Indic)."""
-    data = []
-    
-    with open(dataset_path, encoding='utf-8') as f:
-        content = f.read().strip()
-    
-    # decoding a stream of JSON objects one by one
-    decoder = json.JSONDecoder()
-    pos = 0
-    content = content.lstrip()
-    
-    while pos < len(content):
-        # Skip whitespace
-        while pos < len(content) and content[pos] in ' \t\n\r':
-            pos += 1
-        if pos >= len(content):
-            break
-        try:
-            obj, end_pos = decoder.raw_decode(content, pos)
-            data.append(obj)
-            pos = end_pos
-        except json.JSONDecodeError as e:
-            print(f"Parse error at pos {pos}: {e}")
-            break
-    
-    return data
 
 def explore(name, dataset_path):
     print(f"{name} : {dataset_path}")
