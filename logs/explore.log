@@ -171,3 +171,4 @@ Top 30 labels:
 NA count: 0 (0.0% of pairs)
 
 Sentence length (words): min=9, max=59, avg=30.7
+Saved index2label and label2index maps in ./label_mapping/index2label.json and ./label_mapping/label2index.json path
