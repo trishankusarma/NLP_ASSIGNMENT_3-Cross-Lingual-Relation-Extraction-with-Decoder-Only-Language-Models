@@ -38,8 +38,7 @@ def load_label_index_mappings(index2labelPath, label2indexPath):
     
     return index2label, label2index
 
-def flatten_data(train_data, label2index):
-    pairs = []
+def flatten_data(train_data, label2index, pairs):
     for sample in train_data:
         for rel in sample["relationMentions"]:
             label = rel["label"]
@@ -125,8 +124,10 @@ def main(args):
     print(f"Using device {device}")
 
     # Step 1: lets load the data for both train and validation set
-    train_data = load_jsonl(args.train_file)
-    valid_data = load_jsonl(args.valid_file)
+    train_english_data = load_jsonl(args.english_train_file)
+    train_hindi_data = load_jsonl(args.hindi_train_file)
+    train_kanada_data = load_jsonl(args.kanada_train_file)
+    valid_english_data = load_jsonl(args.english_valid_file)
     
     # Step 2: Load the index2label and label2index jsons
     index2label, label2index = load_label_index_mappings(INDEX_2_LABEL_PATH, LABEL_2_INDEX_PATH)
@@ -134,8 +135,13 @@ def main(args):
     print(f"Number of index2label-keys : {len(index2label)} and label2index-keys : {len(label2index)}")
 
     # Step 3: Flatten to pairs {'sentText' , 'em1Text', 'em2Text', 'label', 'label_id'} # for each label
-    train_pairs = flatten_data(train_data, label2index)
-    valid_pairs = flatten_data(valid_data, label2index)
+    train_pairs = []
+    train_pairs = flatten_data(train_english_data, label2index, train_pairs)
+    train_pairs = flatten_data(train_hindi_data, label2index, train_pairs)
+    train_pairs = flatten_data(train_kanada_data, label2index, train_pairs)
+
+    valid_pairs = []
+    valid_pairs = flatten_data(valid_english_data, label2index, valid_pairs)
     print(f"Total number of train-pairs {len(train_pairs)} and valid-pairs {len(valid_pairs)}")
 
     # Step 4: Get class weight for each labeled imbalanced data
@@ -233,7 +239,8 @@ def main(args):
             best_val_f1 = f1_macro
             # Now we need to save 3 things :: 1. Fine tuned model weights 2. Classifier weights 3. Tokenizer used
             model.base_model.save_pretrained(
-                os.path.join(args.output_dir, "lora_adapter")
+                os.path.join(args.output_dir, "lora_adapter"),
+                save_embedding_layers=True
             )
             torch.save(
                 model.classifier.state_dict(), 
@@ -248,8 +255,10 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--train_file", type=str, required=True)
-    parser.add_argument("--valid_file", type=str, required=True)
+    parser.add_argument("--english_train_file", type=str, required=True)
+    parser.add_argument("--hindi_train_file", type=str, required=True)
+    parser.add_argument("--kanada_train_file", type=str, required=True)
+    parser.add_argument("--english_valid_file", type=str, required=True)
     parser.add_argument("--output_dir", type=str, required=True)
 
     args = parser.parse_args()
