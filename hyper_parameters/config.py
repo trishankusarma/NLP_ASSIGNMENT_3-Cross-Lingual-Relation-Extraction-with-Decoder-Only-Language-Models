@@ -10,3 +10,5 @@ class PartAConfig:
     lr :int = 2e-4
     lora_r  :int = 16
     lora_alpha  :int = 32
+    dropout :float = 0.1
+    lora_dropout :float = 0.1

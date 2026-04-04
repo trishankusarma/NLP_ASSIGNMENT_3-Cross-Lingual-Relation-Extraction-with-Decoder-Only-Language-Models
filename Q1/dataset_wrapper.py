@@ -37,7 +37,7 @@ class DatasetWrapper(Dataset):
         
         return mask
 
-    def __get_item__(self, idx):
+    def __getitem__(self, idx):
         
         pair = self.pairs[idx]
         em1Text = pair["em1Text"]
@@ -55,7 +55,7 @@ class DatasetWrapper(Dataset):
             # return_tensors="pt" gives shape (1, max_length)
         )
         
-        input_ids = encoded_token["input_ids"].squeeze(0)
+        input_ids = encoded_token["input_ids"].squeeze(0) # makes the dimension < max_length , >
         attention_mask = encoded_token["attention_mask"].squeeze(0)
         offset_mapping = encoded_token["offset_mapping"].squeeze(0).tolist()
 

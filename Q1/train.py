@@ -4,11 +4,13 @@ import numpy as np
 import torch
 import json
 from collections import Counter
-from transformers import AutoTokenizer, AutoModel, AutoConfig
+from transformers import AutoTokenizer
+from torch.utils.data import DataLoader
 
 from hyper_parameters.config import PartAConfig
 from utils.utils import load_jsonl
 from .dataset_wrapper import DatasetWrapper, update_sentence
+from .model_class import ModelClass
 
 config = PartAConfig()
 
@@ -121,13 +123,34 @@ def main(args):
     valid_dataset = DatasetWrapper(valid_pairs, tokenizer, special_tokens, max_length = max_length)
 
     train_loader = DataLoader(train_dataset, batch_size=config.batch_size,
-                              shuffle=True, num_workers=2, pin_memory=True)
-    valid_loader = DataLoader(valid_dataset, batch_size=args.batch_size*2,
-                              shuffle=False, num_workers=2, pin_memory=True)
+                              shuffle=True, num_workers=1, pin_memory=True)
+    valid_loader = DataLoader(valid_dataset, batch_size=config.batch_size*2,
+                              shuffle=False, num_workers=1, pin_memory=True)
 
     # Step 7: Build model using LORA
+    model = ModelClass(
+        hyper_parameters = config,
+        num_labels = len(label2index),
+        vocab_size = len(tokenizer),
+        class_weights = class_weights
+    )
+    model = model.to(device)
     # Step 8: Initialize the optimizer
     # Step 9: Train the model
+    for epoch in range(config.epochs):
+        print(f"Training for epoch {epoch}")
+        model.train()
+
+        for step, batch in enumerate(train_loader):
+            input_ids = batch["input_ids"].to(device)
+            attention_mask = batch["attention_mask"].to(device)
+            entity_map1 = batch["entity_map1"].to(device)
+            entity_map2 = batch["entity_map2"].to(device)
+            label = batch["label"].to(device)
+
+            model(input_ids, attention_mask, entity_map1, entity_map2, label)
+            break
+        break
     # Step 9.1 : Evaluate model after every epoch
 
 if __name__ == "__main__":
