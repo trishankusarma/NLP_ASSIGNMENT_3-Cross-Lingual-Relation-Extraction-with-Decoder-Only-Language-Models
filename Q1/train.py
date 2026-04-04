@@ -222,7 +222,7 @@ def main(args):
                 })
 
         print(f"Epoch {epoch+1}/{config.epochs} :: Time taken : {time.time()-start_time} | "
-                   f"Loss: {total_loss/(step+1):.4f} | "
+                   f"Loss: {total_loss/(len(train_loader)):.4f} | "
                    f"Acc: {100*correct_points/total_points:.2f}%")
 
         # Step 9.1 : Evaluate model after every epoch
