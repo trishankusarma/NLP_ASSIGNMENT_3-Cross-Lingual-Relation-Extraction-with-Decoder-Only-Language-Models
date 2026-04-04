@@ -11,8 +11,7 @@ class ModelClass(nn.Module):
         # 1. load base model
         self.base_model = AutoModelForCausalLM.from_pretrained(
             hyper_parameters.model_name,
-            dtype=torch.float16, 
-            device_map="auto"
+            dtype=torch.float16
         )
         self.config = self.base_model.config
         self.hidden_size = self.config.hidden_size
@@ -34,10 +33,10 @@ class ModelClass(nn.Module):
         self.base_model = get_peft_model(self.base_model, lora_config)
         self.base_model.print_trainable_parameters()
 
-        # 4. add classification head: Linear(hidden_size, num_labels)
+        # 4. add classifier head: Linear(hidden_size, num_labels)
         self.dropout = nn.Dropout(hyper_parameters.dropout)
         # bcz we are concatenating entity1 and entity2 representations -> so hidden_size*2
-        self.classification = nn.Linear(self.hidden_size * 2, num_labels)
+        self.classifier = nn.Linear(self.hidden_size * 2, num_labels)
 
     def pool_entity(self, hidden_states, entity_mask):
         # entity_mask: (batch, seq_len) with 1s at entity positions
@@ -65,10 +64,10 @@ class ModelClass(nn.Module):
         # 3. concat and classify
         concated_entities = torch.cat([pooled_enitity1, pooled_enitity2], dim = -1) # (B, 2*hidden_state)
         concated_entities = self.dropout(concated_entities.float())
-        logits = self.classification(concated_entities) # (B, num_labels)
+        logits = self.classifier(concated_entities) # (B, num_labels)
 
         loss = None  
         if label is not None: # during inference label might be none
-            criterion = nn.CrossEntropyLoss(weight=self.class_weights)
-            loss = criterion(logits, labels)
+            criterion = nn.CrossEntropyLoss(weight=self.class_weights.float())
+            loss = criterion(logits, label)
         return logits, loss

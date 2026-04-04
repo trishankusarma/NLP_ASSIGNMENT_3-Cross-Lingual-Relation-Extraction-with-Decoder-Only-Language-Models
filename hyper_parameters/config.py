@@ -12,3 +12,4 @@ class PartAConfig:
     lora_alpha  :int = 32
     dropout :float = 0.1
     lora_dropout :float = 0.1
+    weight_decay :float = 0.01
