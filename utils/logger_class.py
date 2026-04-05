@@ -1,5 +1,24 @@
 import sys
+import os
 from datetime import datetime
+
+def logging(s='1'):
+    global current_logger
+    log_path = os.path.join('logs', f'output_{s}.txt')
+
+    # If stdout is already a Logger, unwrap to real stdout
+    if isinstance(sys.stdout, Logger):
+        sys.stdout = sys.stdout.terminal
+
+    # Initialize new logger (always starts fresh)
+    current_logger = Logger(log_path)
+    sys.stdout = current_logger
+
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print("=" * 70)
+    print(f"Logging started at {timestamp}")
+    print(f"Log file   : {log_path}")
+    print("=" * 70)
 
 class Logger:
     def __init__(self, filename):

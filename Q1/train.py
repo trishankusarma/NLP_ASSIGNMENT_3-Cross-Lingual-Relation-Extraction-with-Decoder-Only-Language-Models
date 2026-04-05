@@ -18,27 +18,9 @@ from datetime import datetime
 from hyper_parameters.config import PartAConfig
 from utils.utils import load_jsonl
 from utils.plot_utils import plot_metrics
-from utils.logger_class import Logger
+from utils.logger_class import logging
 from .dataset_wrapper import DatasetWrapper, update_sentence
 from .model_class import ModelClass
-
-def logging(s='1'):
-    global current_logger
-    log_path = os.path.join('logs', f'output_{s}.txt')
-
-    # If stdout is already a Logger, unwrap to real stdout
-    if isinstance(sys.stdout, Logger):
-        sys.stdout = sys.stdout.terminal
-
-    # Initialize new logger (always starts fresh)
-    current_logger = Logger(log_path)
-    sys.stdout = current_logger
-
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    print("=" * 70)
-    print(f"Logging started at {timestamp}")
-    print(f"Log file   : {log_path}")
-    print("=" * 70)
 
 config = PartAConfig()
 
