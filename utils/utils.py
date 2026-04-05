@@ -1,4 +1,5 @@
 import json
+import os
 
 def load_jsonl(dataset_path):
     """Handles both single-line JSONL (English) and pretty-printed JSON objects (Indic)."""
@@ -27,3 +28,23 @@ def load_jsonl(dataset_path):
             break
     
     return data
+
+def load_lang_map(lang):
+    # English doesn't need mapping
+    if lang == "en":
+        return None
+    
+    map_paths = {
+        "hi": "label_mapping/hi_map.json",
+        "kn": "label_mapping/kn_map.json",
+        "or": "label_mapping/or_map.json",
+        "tcy": "label_mapping/tcy_map.json"
+    }
+    
+    path = map_paths.get(lang)
+    print(f"path of label mapping")
+    if path and os.path.exists(path):
+        with open(path, 'r', encoding='utf-8') as f:
+            return json.load(f)  # {english_label: indic_label}
+    
+    return None

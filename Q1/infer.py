@@ -10,7 +10,7 @@ import torch.nn as nn
 
 from hyper_parameters.config import PartAConfig
 from .dataset_wrapper import DatasetWrapper
-from utils.utils import load_jsonl
+from utils.utils import load_jsonl, load_lang_map
 from utils.logger_class import logging
 from .model_class import ModelClass
 
@@ -80,10 +80,9 @@ def flatten_test_data(test_data):
 
     return pairs
 
-def run_inference(model, data_loader, index2label, device):
+def run_inference(model, data_loader, index2label, lang_map, device):
     # return list of predicted label strings
     all_preds = []
-
     with torch.no_grad():
         for batch in tqdm(data_loader, desc="Evaluating"):
             
@@ -94,8 +93,18 @@ def run_inference(model, data_loader, index2label, device):
 
             logits, _ = model(input_ids, attention_mask, entity_map1, entity_map2)
             preds = logits.argmax(dim=-1).cpu().tolist()
-            pred_labels = [index2label[str(p)] for p in preds]
-            all_preds.extend(pred_labels)
+
+            for p in preds:
+                english_label = index2label[str(p)]
+                # translate if lang_map exists
+                if not lang_map:
+                    label = english_label
+                elif lang_map and english_label in lang_map:
+                    label = lang_map[english_label]
+                else:
+                    print(f"Warning :: {english_label} doesn't exist in the indic literature")
+                    label = english_label
+                all_preds.append(label)
 
     return all_preds
 
@@ -134,6 +143,7 @@ def main(args):
     special_tokens = ["[EM1]", "[/EM1]", "[EM2]", "[/EM2]"]
 
     test_data = load_jsonl(args.test_file)
+    lang_map = load_lang_map(args.lang)
     test_pairs = flatten_test_data(test_data)
 
     test_dataset = DatasetWrapper(
@@ -149,7 +159,7 @@ def main(args):
         num_workers=0, 
         pin_memory=True
     )
-    predictions = run_inference(model_configurations["model"], test_loader, model_configurations["index2label"], device)
+    predictions = run_inference(model_configurations["model"], test_loader, model_configurations["index2label"], lang_map, device)
 
     # Build unique maps for each pair
     all_pred_map = {}

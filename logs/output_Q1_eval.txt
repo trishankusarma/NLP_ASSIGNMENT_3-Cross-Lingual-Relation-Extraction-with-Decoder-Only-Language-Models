@@ -1,0 +1,24 @@
+(base) [aiy257584@scai02 ~/scratch/Workspace/NLP_A3]
+$ python eval.py Q1/output/output_en.jsonl ./en_sft_dataset/valid.jsonl
+Evaluation Results:
+-------------------
+Total True Relations : 8489
+Macro F1             : 0.8689
+Micro F1             : 0.8387
+
+(base) [aiy257584@scai02 ~/scratch/Workspace/NLP_A3]
+$ python eval.py Q1/output/output_hi.jsonl ./sft_dataset/hi_train.jsonl
+Parse error at pos 205393: Expecting value: line 6826 column 1 (char 205393)
+Evaluation Results:
+-------------------
+Total True Relations : 334
+Macro F1             : 0.8248
+Micro F1             : 0.7575
+
+(base) [aiy257584@scai02 ~/scratch/Workspace/NLP_A3]
+$ python eval.py Q1/output/output_kn.jsonl ./sft_dataset/kn_train.jsonl
+Evaluation Results:
+-------------------
+Total True Relations : 332
+Macro F1             : 0.7117
+Micro F1             : 0.6657
