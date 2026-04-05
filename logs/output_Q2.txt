@@ -1,0 +1,22 @@
+[01:24:50] ======================================================================
+[01:24:50] Logging started at 2026-04-06 01:24:50
+[01:24:50] Log file   : logs/output_Q2.txt
+[01:24:50] ======================================================================
+[01:24:50] Using device cuda
+[01:24:52] Loading All training data...
+[01:24:53] Added 56196 and 5000 for training and validation from english script
+[01:24:53] Parse error at pos 205393: Expecting value: line 6826 column 1 (char 205393)
+[01:24:53] path of label mapping label_mapping/hi_map.json
+[01:24:53] sft_dataset/hi_train.jsonl : Added 200 for training
+[01:24:53] path of label mapping label_mapping/kn_map.json
+[01:24:53] sft_dataset/kn_train.jsonl : Added 200 for training
+[01:24:53] sft_dataset/or_train.jsonl : Added 89 for training
+[01:24:53] sft_dataset/tcy_val.jsonl Added 71 data to train out of 95
+[01:24:53] Total train samples: 56756
+[01:25:13] 95th percentile: 120
+[01:25:13] 99th percentile: 170
+[01:25:13] 99.5th percentile: 306
+[01:25:13] 99.9th percentile: 516
+[01:25:13] Max_length : 170
+[01:25:13] Building model with Qwen/Qwen2.5-1.5B and LORA fine tuning
+[01:25:15] trainable params: 18,464,768 || all params: 1,562,179,072 || trainable%: 1.1820
