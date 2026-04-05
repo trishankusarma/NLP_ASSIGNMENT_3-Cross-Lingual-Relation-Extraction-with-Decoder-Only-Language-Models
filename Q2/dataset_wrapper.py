@@ -19,16 +19,32 @@ def build_target(label):
 class DatasetWrapper(Dataset):
     # Each item is a (prompt + target) string for causal LM training.
     # We only compute loss on the TARGET tokens (not the prompt).
-    def __init__(self, samples, tokenizer, max_length=172):
+    def __init__(self, samples, tokenizer, max_length=172, inference=False):
         self.tokenizer = tokenizer
         self.max_length = max_length
         self.samples = samples
+        self.inference = inference
  
     def __len__(self):
         return len(self.samples)
  
     def __getitem__(self, idx):
         sample = self.samples[idx]
+
+        if self.inference:
+            prompt = sample['prompt']
+            enc = self.tokenizer(
+                prompt,
+                max_length     = self.max_length,
+                truncation     = True,
+                padding        = 'max_length',
+                return_tensors = 'pt'
+            )
+            return {
+                "input_ids"      : enc["input_ids"].squeeze(0),
+                "attention_mask" : enc["attention_mask"].squeeze(0),
+            }
+
         prompt, target = sample['prompt'], sample['target']
         full_text = prompt + target
  
