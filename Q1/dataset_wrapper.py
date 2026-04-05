@@ -76,5 +76,5 @@ class DatasetWrapper(Dataset):
             "attention_mask": attention_mask,
             "entity_map1": entity_map1,
             "entity_map2": entity_map2,
-            "label": torch.tensor(pair["label_id"],  dtype=torch.long)
+            "label": torch.tensor(pair.get("label_id", -1),  dtype=torch.long)
         }

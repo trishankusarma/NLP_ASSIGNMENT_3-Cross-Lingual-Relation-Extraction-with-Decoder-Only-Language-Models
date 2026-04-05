@@ -5,7 +5,7 @@ import torch.nn as nn
 
 # Lets gooooo
 class ModelClass(nn.Module):
-    def __init__(self, hyper_parameters, num_labels, vocab_size, class_weights):
+    def __init__(self, hyper_parameters, num_labels, vocab_size, class_weights, apply_lora = True):
         super().__init__()
 
         # 1. load base model
@@ -21,17 +21,18 @@ class ModelClass(nn.Module):
         self.base_model.resize_token_embeddings(vocab_size)
         
         # 3. apply LoRA
-        lora_config = LoraConfig(
-            task_type=TaskType.FEATURE_EXTRACTION,
-            r=hyper_parameters.lora_r,
-            lora_alpha=hyper_parameters.lora_alpha,
-            lora_dropout=hyper_parameters.lora_dropout,
-            target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
-                           "gate_proj", "up_proj", "down_proj"],
-            bias="none",
-        )
-        self.base_model = get_peft_model(self.base_model, lora_config)
-        self.base_model.print_trainable_parameters()
+        if apply_lora:
+            lora_config = LoraConfig(
+                task_type=TaskType.FEATURE_EXTRACTION,
+                r=hyper_parameters.lora_r,
+                lora_alpha=hyper_parameters.lora_alpha,
+                lora_dropout=hyper_parameters.lora_dropout,
+                target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
+                            "gate_proj", "up_proj", "down_proj"],
+                bias="none",
+            )
+            self.base_model = get_peft_model(self.base_model, lora_config)
+            self.base_model.print_trainable_parameters()
 
         # 4. add classifier head: Linear(hidden_size, num_labels)
         self.dropout = nn.Dropout(hyper_parameters.dropout)
