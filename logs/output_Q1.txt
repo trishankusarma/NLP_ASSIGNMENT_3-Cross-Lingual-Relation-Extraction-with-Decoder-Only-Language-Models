@@ -1,0 +1,28 @@
+[10:11:52] ======================================================================
+[10:11:52] Logging started at 2026-04-05 10:11:52
+[10:11:52] Log file   : logs/output_Q1.txt
+[10:11:52] ======================================================================
+[10:11:52] Using device cuda
+[10:11:53] Parse error at pos 205393: Expecting value: line 6826 column 1 (char 205393)
+[10:11:53] Number of index2label-keys : 24 and label2index-keys : 119
+[10:11:53] Total number of train-pairs 94888 and valid-pairs 8489
+[10:12:15] 95th percentile: 103
+[10:12:15] 99th percentile: 139
+[10:12:15] Max_length : 140
+[10:12:15] Building model with Qwen/Qwen2.5-1.5B and LORA fine tuning
+[10:12:24] trainable params: 18,464,768 || all params: 1,561,768,960 || trainable%: 1.1823
+[10:39:13] Epoch 1/5 :: Time taken : 1607.147204875946 | Loss: 0.3846 | Acc: 79.21%
+[10:40:14] Avg validation loss : 0.2115505716668904 :: Val_F1_Micro : 0.8319001060195547 :: Val_F1_Macro : 0.8526962117249539
+[10:40:17] Saved the best model 0.8527
+[11:08:41] Epoch 2/5 :: Time taken : 1704.0203578472137 | Loss: 0.2448 | Acc: 83.06%
+[11:09:41] Avg validation loss : 0.1863703169138696 :: Val_F1_Micro : 0.8356696901873012 :: Val_F1_Macro : 0.8559616879658999
+[11:09:44] Saved the best model 0.8560
+[11:37:25] Epoch 3/5 :: Time taken : 1661.2062404155731 | Loss: 0.2215 | Acc: 83.88%
+[11:38:26] Avg validation loss : 0.18085299698369844 :: Val_F1_Micro : 0.8360230887030274 :: Val_F1_Macro : 0.8602951881780162
+[11:38:30] Saved the best model 0.8603
+[12:05:48] Epoch 4/5 :: Time taken : 1637.984159231186 | Loss: 0.1965 | Acc: 84.34%
+[12:06:49] Avg validation loss : 0.18518816244865494 :: Val_F1_Micro : 0.8386146778183532 :: Val_F1_Macro : 0.8687556034456544
+[12:06:52] Saved the best model 0.8688
+[12:33:41] Epoch 5/5 :: Time taken : 1608.7014315128326 | Loss: 0.1821 | Acc: 84.61%
+[12:34:42] Avg validation loss : 0.19456357131992236 :: Val_F1_Micro : 0.838379078807869 :: Val_F1_Macro : 0.8677649618225979
+[12:34:42] Training completed

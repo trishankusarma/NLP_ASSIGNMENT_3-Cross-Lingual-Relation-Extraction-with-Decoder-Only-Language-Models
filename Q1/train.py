@@ -12,11 +12,33 @@ from sklearn.metrics import f1_score
 import os
 import time
 from tqdm import tqdm
+import sys
+from datetime import datetime
 
 from hyper_parameters.config import PartAConfig
 from utils.utils import load_jsonl
+from utils.plot_utils import plot_metrics
+from utils.logger_class import Logger
 from .dataset_wrapper import DatasetWrapper, update_sentence
 from .model_class import ModelClass
+
+def logging(s='1'):
+    global current_logger
+    log_path = os.path.join('logs', f'output_{s}.txt')
+
+    # If stdout is already a Logger, unwrap to real stdout
+    if isinstance(sys.stdout, Logger):
+        sys.stdout = sys.stdout.terminal
+
+    # Initialize new logger (always starts fresh)
+    current_logger = Logger(log_path)
+    sys.stdout = current_logger
+
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print("=" * 70)
+    print(f"Logging started at {timestamp}")
+    print(f"Log file   : {log_path}")
+    print("=" * 70)
 
 config = PartAConfig()
 
@@ -58,9 +80,6 @@ def flatten_data(train_data, label2index, pairs):
 
     return pairs
 
-def next_power_of_2(x):
-    return 1 << (x - 1).bit_length()
-
 def find_max_length(pairs, tokenizer, special_tokens):
     lengths = []
     
@@ -75,7 +94,9 @@ def find_max_length(pairs, tokenizer, special_tokens):
     print(f"95th percentile: {lengths[int(0.95 * len(lengths))]}")
     print(f"99th percentile: {lengths[int(0.99 * len(lengths))]}")
 
-    return next_power_of_2(lengths[int(0.99 * len(lengths))])
+    max_length = lengths[int(0.99 * len(lengths))] + lengths[int(0.99 * len(lengths))]%2
+    print(f"Max_length : {max_length}")
+    return max_length
 
 def get_class_weight(pairs, label2index, num_labels):
     label_counter = Counter()
@@ -132,6 +153,9 @@ def main(args):
     # Step 2: Load the index2label and label2index jsons
     index2label, label2index = load_label_index_mappings(INDEX_2_LABEL_PATH, LABEL_2_INDEX_PATH)
     num_labels = len(index2label)
+
+    # Note there was a typo in the kanada dataset :: to fix
+    label2index["/ಸ್ಥಳ/ದೇಶ/ರಾಜಧಾನ"] = label2index["/ಸ್ಥಳ/ದೇಶ/ರಾಜಧಾನಿ"]
     print(f"Number of index2label-keys : {len(index2label)} and label2index-keys : {len(label2index)}")
 
     # Step 3: Flatten to pairs {'sentText' , 'em1Text', 'em2Text', 'label', 'label_id'} # for each label
@@ -191,6 +215,11 @@ def main(args):
     }
     with open(os.path.join(args.output_dir, "train_config.json"), "w") as f:
         json.dump(config_to_save, f)
+    
+    train_losses = []
+    train_accs = []
+    val_f1_score_micro = []
+    val_f1_score_macro = []
 
     # Step 9: Train the model
     for epoch in range(config.epochs):
@@ -198,6 +227,7 @@ def main(args):
         total_loss = 0
         correct_points = 0
         total_points = 0
+        loss_window = [] # will be maintaining a loss window of size 500
         start_time = time.time()
 
         pbar = tqdm(train_loader, desc=f"Epoch {epoch+1} Training")
@@ -220,10 +250,18 @@ def main(args):
             preds = logits.argmax(dim=-1)
             correct_points += (preds == label).sum().item()
             total_points += label.size(0)
+
+            loss_window.append(loss.item())
+            if len(loss_window) > 500:
+                loss_window.pop(0)
         
-            if (step+1) % 500 == 0 or (step+1) == len(train_loader):
+            if (step+1) % 100 == 0 or (step+1) == len(train_loader):
+                recent_loss = sum(loss_window) / len(loss_window)
+                train_losses.append(recent_loss)
+                train_accs.append(100 * correct_points / total_points)
+
                 pbar.set_postfix({
-                    "loss": f"{total_loss/(step+1):.4f}",
+                    "loss": f"{recent_loss:.4f}",
                     "acc": f"{100*correct_points/total_points:.2f}%"
                 })
 
@@ -233,6 +271,8 @@ def main(args):
 
         # Step 9.1 : Evaluate model after every epoch
         f1_micro, f1_macro = evaluate_task(model, valid_loader, device)
+        val_f1_score_micro.append(f1_micro)
+        val_f1_score_macro.append(f1_macro)
 
         if f1_macro >= best_val_f1:
 
@@ -250,7 +290,9 @@ def main(args):
                 os.path.join(args.output_dir, "tokenizer")
             )
             print(f"Saved the best model {best_val_f1:.4f}")
-    print(f"Training completed")
+    
+    plot_metrics(train_losses, train_accs, val_f1_score_micro, val_f1_score_macro, args.output_dir)
+    print(f"Training completed -- and plots saved")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -262,5 +304,5 @@ if __name__ == "__main__":
     parser.add_argument("--output_dir", type=str, required=True)
 
     args = parser.parse_args()
-
-    main(args) 
+    logging(s = "Q1")
+    main(args)

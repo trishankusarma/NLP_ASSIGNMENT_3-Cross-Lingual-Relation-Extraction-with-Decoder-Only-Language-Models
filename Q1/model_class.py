@@ -11,7 +11,7 @@ class ModelClass(nn.Module):
         # 1. load base model
         self.base_model = AutoModelForCausalLM.from_pretrained(
             hyper_parameters.model_name,
-            dtype=torch.float16
+            dtype=torch.bfloat16
         )
         self.config = self.base_model.config
         self.hidden_size = self.config.hidden_size
