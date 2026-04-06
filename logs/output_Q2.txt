@@ -24,3 +24,19 @@
 [02:10:13] English validation loss : 0.0279856859925168 and Tulu Val Loss : 0.015198792098090053
 [02:10:13] Overall Val Loss: 0.0277
 [02:10:15] Saved best model (loss=0.0277)
+[02:40:01] Epoch 2/5 :: Time taken : 1786.803433895111 | Loss: 0.0275
+[02:41:11] English validation loss : 0.0266340959404028 and Tulu Val Loss : 0.013174141600029544
+[02:41:11] Overall Val Loss: 0.0264
+[02:41:12] Saved best model (loss=0.0264)
+[03:11:21] Epoch 3/5 :: Time taken : 1808.9903981685638 | Loss: 0.0253
+[03:12:32] English validation loss : 0.026497087680233147 and Tulu Val Loss : 0.005567514690483222
+[03:12:32] Overall Val Loss: 0.0261
+[03:12:34] Saved best model (loss=0.0261)
+[03:42:26] Epoch 4/5 :: Time taken : 1791.7006125450134 | Loss: 0.0238
+[03:43:35] English validation loss : 0.026083191728291166 and Tulu Val Loss : 0.00544719885874656
+[03:43:35] Overall Val Loss: 0.0257
+[03:44:00] Saved best model (loss=0.0257)
+[04:13:54] Epoch 5/5 :: Time taken : 1794.0377173423767 | Loss: 0.0229
+[04:15:04] English validation loss : 0.027605447412744632 and Tulu Val Loss : 0.003112126035739493
+[04:15:04] Overall Val Loss: 0.0272
+[04:15:04] Done. Best val loss: 0.0257
