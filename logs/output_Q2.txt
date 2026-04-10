@@ -1,42 +1,22 @@
-[01:38:47] ======================================================================
-[01:38:47] Logging started at 2026-04-06 01:38:47
-[01:38:47] Log file   : logs/output_Q2.txt
-[01:38:47] ======================================================================
-[01:38:47] Using device cuda
-[01:38:48] Loading All training data...
-[01:38:49] Added 56196 and 5000 for training and validation from english script
-[01:38:49] Parse error at pos 205393: Expecting value: line 6826 column 1 (char 205393)
-[01:38:49] path of label mapping label_mapping/hi_map.json
-[01:38:49] sft_dataset/hi_train.jsonl : Added 200 for training
-[01:38:49] path of label mapping label_mapping/kn_map.json
-[01:38:49] sft_dataset/kn_train.jsonl : Added 200 for training
-[01:38:49] sft_dataset/or_train.jsonl : Added 89 for training
-[01:38:49] sft_dataset/tcy_val.jsonl Added 71 data to train out of 95
-[01:38:49] Total train samples: 56756
-[01:39:10] 95th percentile: 120
-[01:39:10] 99th percentile: 170
-[01:39:10] 99.5th percentile: 306
-[01:39:10] 99.9th percentile: 516
-[01:39:10] Max_length : 170
-[01:39:10] Building model with Qwen/Qwen2.5-1.5B and LORA fine tuning
-[01:39:11] trainable params: 18,464,768 || all params: 1,562,179,072 || trainable%: 1.1820
-[02:09:03] Epoch 1/5 :: Time taken : 1789.6959636211395 | Loss: 0.0397
-[02:10:13] English validation loss : 0.0279856859925168 and Tulu Val Loss : 0.015198792098090053
-[02:10:13] Overall Val Loss: 0.0277
-[02:10:15] Saved best model (loss=0.0277)
-[02:40:01] Epoch 2/5 :: Time taken : 1786.803433895111 | Loss: 0.0275
-[02:41:11] English validation loss : 0.0266340959404028 and Tulu Val Loss : 0.013174141600029544
-[02:41:11] Overall Val Loss: 0.0264
-[02:41:12] Saved best model (loss=0.0264)
-[03:11:21] Epoch 3/5 :: Time taken : 1808.9903981685638 | Loss: 0.0253
-[03:12:32] English validation loss : 0.026497087680233147 and Tulu Val Loss : 0.005567514690483222
-[03:12:32] Overall Val Loss: 0.0261
-[03:12:34] Saved best model (loss=0.0261)
-[03:42:26] Epoch 4/5 :: Time taken : 1791.7006125450134 | Loss: 0.0238
-[03:43:35] English validation loss : 0.026083191728291166 and Tulu Val Loss : 0.00544719885874656
-[03:43:35] Overall Val Loss: 0.0257
-[03:44:00] Saved best model (loss=0.0257)
-[04:13:54] Epoch 5/5 :: Time taken : 1794.0377173423767 | Loss: 0.0229
-[04:15:04] English validation loss : 0.027605447412744632 and Tulu Val Loss : 0.003112126035739493
-[04:15:04] Overall Val Loss: 0.0272
-[04:15:04] Done. Best val loss: 0.0257
+[22:59:57] ======================================================================
+[22:59:57] Logging started at 2026-04-10 22:59:57
+[22:59:57] Log file   : logs/output_Q2.txt
+[22:59:57] ======================================================================
+[22:59:58] Using device cuda
+[22:59:59] Loading All training data...
+[22:59:59] Added 56196 and 5000 for training and validation from english script
+[22:59:59] Parse error at pos 205393: Expecting value: line 6826 column 1 (char 205393)
+[22:59:59] path of label mapping label_mapping/hi_map.json
+[22:59:59] sft_dataset/hi_train.jsonl : Added 200 for training
+[22:59:59] path of label mapping label_mapping/kn_map.json
+[22:59:59] sft_dataset/kn_train.jsonl : Added 200 for training
+[23:00:00] sft_dataset/or_train.jsonl : Added 89 for training
+[23:00:00] sft_dataset/tcy_val.jsonl Added 71 data to train out of 95
+[23:00:00] Total train samples: 56756
+[23:00:21] 95th percentile: 120
+[23:00:21] 99th percentile: 170
+[23:00:21] 99.5th percentile: 306
+[23:00:21] 99.9th percentile: 516
+[23:00:21] Max_length : 170
+[23:00:21] Building model with Qwen/Qwen2.5-1.5B and LORA fine tuning
+[23:00:23] trainable params: 18,464,768 || all params: 1,562,179,072 || trainable%: 1.1820

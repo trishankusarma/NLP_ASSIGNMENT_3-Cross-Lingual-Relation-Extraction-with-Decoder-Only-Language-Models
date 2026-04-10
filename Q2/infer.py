@@ -166,7 +166,7 @@ def main(args):
 
     # Load valid labels + lang map
     valid_labels = load_valid_labels()
-    lang_map = load_lang_map(args.lang) if args.lang != 'en' else None
+    lang_map = load_lang_map(args.lang) if args.lang in ['hi', 'kn'] else None
 
     # Load + flatten test data
     test_data    = load_jsonl(args.test_file)
