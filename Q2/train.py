@@ -16,8 +16,18 @@ from hyper_parameters.config import PartBConfig
 from utils.utils import load_jsonl, load_lang_map
 from .dataset_wrapper import DatasetWrapper, build_prompt, build_target
 from .model_class import ModelClass
+from .evaluate import evaluate_loss, run_all_f1
 
 config = PartBConfig()
+
+# Per-language max lengths (from token length analysis)
+LANG_MAX_LENGTHS = {
+    'en'  : 142,    # 99th percentile
+    'hi'  : 448,    # 99th percentile
+    'kn'  : 714,    # 99th percentile
+    'or'  : 1026,   # 99th percentile
+    'tcy' : 556,    # 99th percentile (rounded to even)
+}
 
 def set_seed(seed=42):
     random.seed(seed)
@@ -88,23 +98,6 @@ def update_label_to_english(indic_data, lang_map, lang):
                 # keep original as fallback
             else:
                 rel["label"] = updated_label
-
-def evaluate(model, valid_loader, device):
-    val_loss = 0
-    with torch.no_grad():
-        for batch in tqdm(valid_loader, desc="Evaluating Data"):
-            if batch is None:
-                continue
-            input_ids = batch['input_ids'].to(device)
-            attention_mask = batch['attention_mask'].to(device)
-            labels = batch['labels'].to(device)
-
-            outputs = model(input_ids=input_ids,
-                            attention_mask=attention_mask,
-                            labels=labels)
-
-            val_loss += outputs.loss.item()
-    return val_loss
 
 def main(args):
     set_seed(42)
@@ -223,8 +216,8 @@ def main(args):
         print(f"Epoch {epoch+1}/{config.epochs} :: Time taken : {time.time()-start_time} | "
                 f"Loss: {total_loss/(len(train_loader)):.4f}")
 
-        eng_val_loss = evaluate(model, eng_valid_loader, device)
-        tulu_val_loss = evaluate(model, tulu_valid_loader, device)
+        eng_val_loss = evaluate_loss(model, eng_valid_loader, device)
+        tulu_val_loss = evaluate_loss(model, tulu_valid_loader, device)
 
         print(f"English validation loss : {eng_val_loss/len(eng_valid_loader)} and Tulu Val Loss : {tulu_val_loss/len(tulu_valid_loader)}")
         val_loss = (eng_val_loss + tulu_val_loss) / ( len(eng_valid_loader) + len(tulu_valid_loader))
@@ -235,6 +228,14 @@ def main(args):
             model.base_model.save_pretrained(os.path.join(args.output_dir, "lora_adapter"))
             tokenizer.save_pretrained(os.path.join(args.output_dir, "tokenizer"))
             print(f"Saved best model (loss={best_val_loss:.4f})")
+        
+        run_all_f1(
+            model, tokenizer,
+            eng_valid_data, tulu_valid_data, tulu_valid_data,
+            load_jsonl(args.oria_train_file), tulu_valid_data,
+            [], [], device, config, LANG_MAX_LENGTHS,
+            tag=f"[Epoch {epoch+1}]"
+        )
  
     print(f"\nDone. Best val loss: {best_val_loss:.4f}")
 
