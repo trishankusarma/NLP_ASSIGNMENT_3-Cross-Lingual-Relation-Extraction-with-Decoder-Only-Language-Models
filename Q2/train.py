@@ -17,6 +17,7 @@ from utils.utils import load_jsonl, load_lang_map
 from .dataset_wrapper import DatasetWrapper, build_prompt, build_target
 from .model_class import ModelClass
 from .evaluate import evaluate_loss, run_all_f1
+from .stage_1_train import run_cpt
 
 config = PartBConfig()
 
@@ -170,7 +171,21 @@ def main(args):
     )
     model = model.to(device)
 
-    # Step 7: Initialize the optimizer :: for only lora
+    # Step 7.1: CPT on Indic Wikipedia
+    if args.run_cpt:
+        run_cpt(model, tokenizer, device, config, wiki_dir=args.wiki_dir)
+        print("[CPT] Stage 1 complete — evaluating F1 before SFT...")
+        run_all_f1(
+            model, tokenizer,
+            eng_valid_data, train_hindi_data, train_kanada_data,
+            load_jsonl(args.oria_train_file), tulu_valid_data,
+            valid_labels, lang_maps, device, config, LANG_MAX_LENGTHS,
+            tag="[After CPT, Before SFT]"
+        )
+        model.base_model.save_pretrained(os.path.join(args.output_dir, "lora_adapter"))
+        print("[CPT] Base model saved ... Proceeding to Stage 2: SFT...")
+
+    # Step 7.2: Initialize the optimizer :: for only lora
     optimizer = AdamW(
         filter(lambda p: p.requires_grad, model.parameters()),
         lr=config.lr,
@@ -249,6 +264,8 @@ if __name__ == "__main__":
     parser.add_argument("--tulu_valid_file", type=str, required=True)
     parser.add_argument("--english_valid_file", type=str, required=True)
     parser.add_argument("--output_dir", type=str, required=True)
+    parser.add_argument("--run_cpt",  action="store_true")
+    parser.add_argument("--wiki_dir", type=str, default="./wikipedia_dumps")
 
     args = parser.parse_args()
     logging(s = "Q2")
