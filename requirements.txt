@@ -8,5 +8,6 @@ pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 \
 
 pip install transformers==4.57.1 peft==0.18.1
 pip install --only-binary=:all: datasets
+pip install scikit-learn
 
 export WANDB_DISABLED="true"
