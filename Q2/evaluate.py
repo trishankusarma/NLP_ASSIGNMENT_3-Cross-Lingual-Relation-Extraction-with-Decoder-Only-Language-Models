@@ -47,7 +47,6 @@ def evaluate_f1(model, tokenizer, data, lang_name, valid_labels,
         flat_samples, tokenizer,
         max_length           = max_length,
         inference            = True,
-        inference_max_length = max_length,
     )
     loader = DataLoader(
         dataset, batch_size=config.batch_size * 2,

@@ -219,6 +219,14 @@ def main(args):
         )
         model.base_model.enable_adapter_layers() 
         model.base_model.print_trainable_parameters()  # ← verify params are trainable
+        model = model.to(device)
+        run_all_f1(
+            model, tokenizer,
+            eng_valid_data, hindi_train_data, kannada_train_data,
+            oria_train_data, tulu_valid_data,
+            valid_labels, lang_maps, device, config, LANG_MAX_LENGTHS,
+            tag=f"[Epoch 0]"
+        )
     else:
         print("[SFT] No Stage 1 adapter — applying fresh LoRA")
         lora_config = LoraConfig(
