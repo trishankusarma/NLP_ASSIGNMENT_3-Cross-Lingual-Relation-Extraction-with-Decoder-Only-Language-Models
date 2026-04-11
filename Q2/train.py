@@ -7,7 +7,7 @@ from torch.optim import AdamW
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from tqdm import tqdm
 from transformers import AutoTokenizer
-from peft import PeftModel
+from peft import PeftModel, get_peft_model, LoraConfig, TaskType
 
 from utils.logger_class import logging
 from utils.utils import load_jsonl, load_lang_map
@@ -22,10 +22,10 @@ config = PartBConfig()
 
 LANG_MAX_LENGTHS = {
     'en'  : 142,
-    'hi'  : 448,
-    'kn'  : 714,
+    'hi'  : 400,
+    'kn'  : 512,
     'or'  : 512,
-    'tcy' : 556,
+    'tcy' : 512,
 }
 
 LORA_ADAPTER_STAGE_1_DIR = "lora_adapter_stage_1"
@@ -138,10 +138,10 @@ def main(args):
     tcy_pairs = flatten_pairs(tulu_valid_data)
 
     # Upsample Indic 10x
-    hi_pairs_up  = hi_pairs  * 10
-    kn_pairs_up  = kn_pairs  * 10
-    or_pairs_up  = or_pairs  * 10
-    tcy_pairs_up = tcy_pairs * 10
+    hi_pairs_up  = hi_pairs  * 1
+    kn_pairs_up  = kn_pairs  * 1
+    or_pairs_up  = or_pairs  * 1
+    tcy_pairs_up = tcy_pairs * 1
 
     print(f"Pairs — en:{len(eng_pairs)} hi:{len(hi_pairs_up)} "
           f"kn:{len(kn_pairs_up)} or:{len(or_pairs_up)} tcy:{len(tcy_pairs_up)}")
@@ -188,19 +188,27 @@ def main(args):
 
     # Step 6: Build model
     print(f"Building model: {config.model_name} + LoRA")
-    model = ModelClass(hyper_parameters=config)
+    model = ModelClass(hyper_parameters=config, apply_lora=False)
 
     # Step 7.1 : Stage 1: CPT
     if args.run_cpt:
+        model = model.to(device)
+        lora_config = LoraConfig(
+            task_type=TaskType.CAUSAL_LM,
+            r=config.lora_r,
+            lora_alpha=config.lora_alpha,
+            lora_dropout=config.lora_dropout,
+            target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
+                        "gate_proj", "up_proj", "down_proj"],
+            bias="none",
+        )
+        model.base_model = get_peft_model(model.base_model, lora_config)
         model = model.to(device)
         run_cpt(model, tokenizer, device, config, wiki_dir=args.wiki_dir)
         model.base_model.save_pretrained(
             os.path.join(args.output_dir, LORA_ADAPTER_STAGE_1_DIR)
         )
-        tokenizer.save_pretrained(
-            os.path.join(args.output_dir, LORA_ADAPTER_STAGE_1_DIR)
-        )
-        print(f"[CPT] Stage 1 adapter saved")
+        print("[CPT] Stage 1 adapter saved")
 
     # Step 7.2 : Load Stage 1 adapter before SFT if exists
     stage1_path = os.path.join(args.output_dir, LORA_ADAPTER_STAGE_1_DIR)
@@ -209,9 +217,23 @@ def main(args):
         model.base_model = PeftModel.from_pretrained(
             model.base_model, stage1_path
         )
+        model.base_model.enable_adapter_layers() 
+        model.base_model.print_trainable_parameters()  # ← verify params are trainable
     else:
-        print("[SFT] No Stage 1 adapter — starting SFT from base LoRA")
+        print("[SFT] No Stage 1 adapter — applying fresh LoRA")
+        lora_config = LoraConfig(
+            task_type=TaskType.CAUSAL_LM,
+            r=config.lora_r,
+            lora_alpha=config.lora_alpha,
+            lora_dropout=config.lora_dropout,
+            target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
+                        "gate_proj", "up_proj", "down_proj"],
+            bias="none",
+        )
+        model.base_model = get_peft_model(model.base_model, lora_config)
+        model.base_model.print_trainable_parameters()  # ← already trainable
 
+    model.base_model.train()
     model = model.to(device)
 
     # Step 7.3 : Stage 2: SFT

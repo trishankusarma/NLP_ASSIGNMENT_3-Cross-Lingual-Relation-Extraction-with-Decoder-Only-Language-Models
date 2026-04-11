@@ -19,7 +19,7 @@ class PartBConfig:
     model_name: str = "Qwen/Qwen2.5-1.5B"
     max_input_length: int = 172   # prompt length
     max_new_tokens: int = 32      # label is short
-    batch_size: int = 16
+    batch_size: int = 8
     epochs: int = 5
     lr: float = 1e-4
     lora_r: int = 16
