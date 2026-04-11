@@ -57,3 +57,21 @@ def load_label_index_mappings(index2labelPath, label2indexPath):
         label2index = json.load(f)
     
     return index2label, label2index
+
+def find_max_length(pairs, tokenizer):
+    lengths = []
+    
+    for pair in pairs:
+        
+        tokens = tokenizer(pair["prompt"] + pair["target"], truncation=False)
+        lengths.append(len(tokens["input_ids"]))
+    
+    lengths = sorted(lengths)
+    print(f"95th percentile: {lengths[int(0.95 * len(lengths))]}")
+    print(f"99th percentile: {lengths[int(0.99 * len(lengths))]}")
+    print(f"99.5th percentile: {lengths[int(0.995 * len(lengths))]}")
+    print(f"99.9th percentile: {lengths[int(0.999 * len(lengths))]}")
+
+    max_length = lengths[int(0.99 * len(lengths))] + lengths[int(0.99 * len(lengths))]%2
+    print(f"Max_length : {max_length}")
+    return max_length
