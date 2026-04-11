@@ -29,3 +29,8 @@ class PartBConfig:
     weight_decay: float = 0.01
 
     tulu_valid_data_used: float = 0.75
+
+@dataclass
+class PartCConfig:
+    model_name: str = "meta-llama/Meta-Llama-3.1-8B-Instruct"
+    num_shorts: int = 5
