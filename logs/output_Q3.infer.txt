@@ -1,0 +1,18 @@
+[11:48:23] ======================================================================
+[11:48:23] Logging started at 2026-04-12 11:48:23
+[11:48:23] Log file   : logs/output_Q3.infer.txt
+[11:48:23] ======================================================================
+[11:48:23] Q3 Inference | lang=tcy
+[11:48:23] Loading model from /home/scai/msr/aiy247541/scratch/models--meta-llama--Llama-3.1-8B-Instruct/snapshots/0e9e39f249a16976918f6564b8830bc894c89659...
+[11:49:19] Model loaded!
+[11:49:20] [Pool] English (full): 94222
+[11:49:20] [Pool] English (sampled): 5000
+[11:49:20] [Pool] tcy: added 95
+[11:49:20] [Pool] Total: 5136
+[11:49:29] [FAISS] Encoding 5136 pool examples...
+[11:49:32] [FAISS] Index built: 5136 vectors, dim=384
+[11:49:32] Loaded 95 test sentences
+[11:49:32] Building prompts with FAISS retrieval...
+[11:49:33] Total prompts: 136
+[11:49:33] Running batch generation...
+[11:50:03] Saved → ./Q3/output/output_tcy.jsonl

@@ -1,0 +1,31 @@
+[19:38:14] ======================================================================
+[19:38:14] Logging started at 2026-04-11 19:38:14
+[19:38:14] Log file   : logs/output_Q2.txt
+[19:38:14] ======================================================================
+[19:38:14] Using device cuda
+[19:38:15] path of label mapping label_mapping/hi_map.json
+[19:38:15] path of label mapping label_mapping/kn_map.json
+[19:38:15] Loading all data...
+[19:38:16] Parse error at pos 205393: Expecting value: line 6826 column 1 (char 205393)
+[19:38:16] Pairs — en:94222 hi:334 kn:332 or:122 tcy:136
+[19:38:16] Steps per epoch: 11,895
+[19:38:16] Building model: Qwen/Qwen2.5-1.5B + LoRA
+[19:47:06] [CPT] Loaded 160000 articles from hi Wikipedia
+[19:50:06] [CPT] Loaded 30000 articles from kn Wikipedia
+[19:50:35] [CPT] Loaded 17375 articles from or Wikipedia
+[19:50:39] [CPT] Loaded 2202 articles from tcy Wikipedia
+[19:50:39] [CPT] Total CPT articles: 209577
+[19:50:39] [CPT] Starting Stage 1: Continued Pre-Training on 209577 articles...
+[21:36:03] [CPT] Stage 1 complete. Avg loss: 0.8043
+[21:36:07] [CPT] Stage 1 adapter saved
+[21:36:07] [SFT] Loading Stage 1 adapter from Q2/output/lora_adapter_stage_1
+[21:36:08] trainable params: 18,464,768 || all params: 1,562,179,072 || trainable%: 1.1820
+[22:18:17] Epoch 1/5 :: Time: 2528.1s | Loss: 0.0392
+[22:19:13] en : Val Loss  : 0.0294
+[22:19:18] hi : Val Loss  : 0.0765
+[22:19:25] kn : Val Loss  : 0.1341
+[22:19:26] or : Val Loss  : 0.2344
+[22:19:29] tcy : Val Loss  : 0.3437
+[22:19:29] Overall  : 0.0430
+[22:19:31] Saved best model (loss=0.0430)
+[22:19:31] --- F1 Scores [Epoch 1] ---

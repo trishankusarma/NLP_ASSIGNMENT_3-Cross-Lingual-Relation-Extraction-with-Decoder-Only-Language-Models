@@ -1,0 +1,29 @@
+Hindi : 
+
+Evaluation Results:
+-------------------
+Total True Relations : 334
+Macro F1             : 0.7846
+Micro F1             : 0.8234
+======================================================================
+Kanada :: 
+
+Evaluation Results:
+-------------------
+Total True Relations : 332
+Macro F1             : 0.7572
+Micro F1             : 0.8223
+======================================================================
+Oria :
+
+Total True Relations : 122
+Macro F1             : 0.7451
+Micro F1             : 0.6885
+======================================================================
+Tulu
+
+Evaluation Results:
+-------------------
+Total True Relations : 136
+Macro F1             : 0.6759
+Micro F1             : 0.6397

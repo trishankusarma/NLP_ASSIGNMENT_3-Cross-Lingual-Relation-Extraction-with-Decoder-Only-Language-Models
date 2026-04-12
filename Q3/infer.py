@@ -15,6 +15,13 @@ from .faiss_retriever import FAISSRetriever
 MODEL_PATH       = "/home/scai/msr/aiy247541/scratch/models--meta-llama--Llama-3.1-8B-Instruct/snapshots/0e9e39f249a16976918f6564b8830bc894c89659"
 LABEL2INDEX_PATH = "./label_mapping/label2index.json"
 
+ENGLISH_TRAIN_PATH = "en_sft_dataset/train.jsonl"
+ENGLIGH_VALID_PATH = "en_sft_dataset/valid.jsonl"
+HINDI_TRAIN_PATH = 'sft_dataset/hi_train.jsonl'
+KANADA_TRAIN_PATH = 'sft_dataset/kn_train.jsonl'
+ORIA_TRAIN_PATH = 'sft_dataset/or_train.jsonl'
+TCY_VALID_PATH = 'sft_dataset/tcy_val.jsonl'
+
 def load_valid_labels(label2index_path=LABEL2INDEX_PATH):
     with open(label2index_path, encoding='utf-8') as f:
         label2index = json.load(f)
@@ -23,7 +30,7 @@ def load_valid_labels(label2index_path=LABEL2INDEX_PATH):
 def build_example_pool(lang):
     pool = []
 
-    en_data = load_jsonl("en_sft_dataset/train.jsonl")
+    en_data = load_jsonl(ENGLISH_TRAIN_PATH)
     for sample in en_data:
         for rel in sample['relationMentions']:
             pool.append({
@@ -42,10 +49,10 @@ def build_example_pool(lang):
         print(f"[Pool] English (sampled): {len(pool)}")
 
     lang_files = {
-        'hi'  : ('sft_dataset/hi_train.jsonl',  True),
-        'kn'  : ('sft_dataset/kn_train.jsonl',  True),
-        'or'  : ('sft_dataset/or_train.jsonl',  False),
-        'tcy' : ('sft_dataset/tcy_val.jsonl',   False),
+        'hi'  : (HINDI_TRAIN_PATH,  True),
+        'kn'  : (KANADA_TRAIN_PATH,  True),
+        'or'  : (ORIA_TRAIN_PATH,  False),
+        'tcy' : (TCY_VALID_PATH,   False),
     }
     if lang in lang_files:
         fpath, needs_map = lang_files[lang]
@@ -55,6 +62,7 @@ def build_example_pool(lang):
             lmap        = load_lang_map(lang)
             reverse_map = {v: k for k, v in lmap.items()}
             if lang == 'kn':
+                # just one mismatch I found
                 reverse_map["/ಸ್ಥಳ/ದೇಶ/ರಾಜಧಾನ"] = reverse_map.get(
                     "/ಸ್ಥಳ/ದೇಶ/ರಾಜಧಾನಿ", "/location/country/capital"
                 )
@@ -77,7 +85,7 @@ def main(args):
     random.seed(42)
     os.makedirs(args.output_dir, exist_ok=True)
 
-    SHOTS_PER_LANG = {'hi': 5, 'kn': 3, 'or': 5, 'tcy': 5}
+    SHOTS_PER_LANG = {'hi': 5, 'kn': 3, 'or': 2, 'tcy': 4}
     num_shots = SHOTS_PER_LANG.get(args.lang, 5)
 
     # Step 1: Load model
@@ -145,6 +153,6 @@ if __name__ == "__main__":
     parser.add_argument("--output_dir", type=str, default="Q3/output")
     args = parser.parse_args()
 
-    logging(s="Q3.infer")
+    logging(s=f"Q3.infer{args.lang}")
     print(f"Q3 Inference | lang={args.lang}")
     main(args)

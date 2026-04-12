@@ -1,0 +1,18 @@
+[12:33:46] ======================================================================
+[12:33:46] Logging started at 2026-04-12 12:33:46
+[12:33:46] Log file   : logs/output_Q3.inferor.txt
+[12:33:46] ======================================================================
+[12:33:46] Q3 Inference | lang=or
+[12:33:46] Loading model from /home/scai/msr/aiy247541/scratch/models--meta-llama--Llama-3.1-8B-Instruct/snapshots/0e9e39f249a16976918f6564b8830bc894c89659...
+[12:34:41] Model loaded!
+[12:34:42] [Pool] English (full): 94222
+[12:34:42] [Pool] English (sampled): 5000
+[12:34:43] [Pool] or: added 89
+[12:34:43] [Pool] Total: 5122
+[12:34:50] [FAISS] Encoding 5122 pool examples...
+[12:34:53] [FAISS] Index built: 5122 vectors, dim=384
+[12:34:53] Loaded 89 test sentences
+[12:34:53] Building prompts with FAISS retrieval...
+[12:34:54] Total prompts: 122
+[12:34:54] Running batch generation...
+[12:35:12] Saved → Q3/output/output_or.jsonl

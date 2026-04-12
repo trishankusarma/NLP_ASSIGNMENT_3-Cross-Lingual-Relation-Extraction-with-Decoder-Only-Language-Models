@@ -1,0 +1,20 @@
+[12:12:52] ======================================================================
+[12:12:52] Logging started at 2026-04-12 12:12:52
+[12:12:52] Log file   : logs/output_Q3.inferkn.txt
+[12:12:52] ======================================================================
+[12:12:52] Q3 Inference | lang=kn
+[12:12:52] Loading model from /home/scai/msr/aiy247541/scratch/models--meta-llama--Llama-3.1-8B-Instruct/snapshots/0e9e39f249a16976918f6564b8830bc894c89659...
+[12:13:44] Model loaded!
+[12:13:44] path of label mapping label_mapping/kn_map.json
+[12:13:45] [Pool] English (full): 94222
+[12:13:45] [Pool] English (sampled): 5000
+[12:13:45] path of label mapping label_mapping/kn_map.json
+[12:13:45] [Pool] kn: added 200
+[12:13:45] [Pool] Total: 5332
+[12:13:53] [FAISS] Encoding 5332 pool examples...
+[12:13:56] [FAISS] Index built: 5332 vectors, dim=384
+[12:13:56] Loaded 200 test sentences
+[12:13:56] Building prompts with FAISS retrieval...
+[12:13:59] Total prompts: 332
+[12:13:59] Running batch generation...
+[12:14:49] Saved → Q3/output/output_kn.jsonl
