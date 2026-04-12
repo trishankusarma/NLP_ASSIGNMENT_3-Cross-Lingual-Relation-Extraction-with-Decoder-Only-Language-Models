@@ -1,13 +1,43 @@
-[22:47:37] ======================================================================
-[22:47:37] Logging started at 2026-04-10 22:47:37
-[22:47:37] Log file   : logs/output_Q1.txt
-[22:47:37] ======================================================================
-[22:47:37] Using device cuda
-[22:47:38] Parse error at pos 205393: Expecting value: line 6826 column 1 (char 205393)
-[22:47:38] Number of index2label-keys : 24 and label2index-keys : 119
-[22:47:38] Total number of train-pairs 94888 and valid-pairs 8489
-[22:47:59] 95th percentile: 103
-[22:47:59] 99th percentile: 139
-[22:47:59] Max_length : 140
-[22:47:59] Building model with Qwen/Qwen2.5-1.5B and LORA fine tuning
-[22:48:13] trainable params: 18,464,768 || all params: 1,561,768,960 || trainable%: 1.1823
+[23:04:54] ======================================================================
+[23:04:54] Logging started at 2026-04-12 23:04:54
+[23:04:54] Log file   : logs/output_Q1.txt
+[23:04:54] ======================================================================
+[23:04:54] Using device cuda
+[23:04:55] Parse error at pos 205393: Expecting value: line 6826 column 1 (char 205393)
+[23:04:55] Number of index2label-keys : 24 and label2index-keys : 119
+[23:04:55] en:94222 hi:334 kn:332 valid:8489
+[23:04:56] Steps per epoch: 6,014
+[23:04:56] Building model with Qwen/Qwen2.5-1.5B and LORA fine tuning
+[23:05:10] trainable params: 18,464,768 || all params: 1,561,768,960 || trainable%: 1.1823
+[23:32:30] Epoch 1/5 :: Time taken : 1640.020273923874 | Loss: 0.3935 | Acc: 79.26%
+[23:33:34] Avg validation loss : 0.21253388506164284 :: Val_F1_Micro : 0.8316645070090706 :: Val_F1_Macro : 0.7946959976273148
+[23:33:34] Lang : en f1_micro : 0.8316645070090706 : f1_macro : 0.7946959976273148
+[23:33:41] Avg validation loss : 1.218122972683473 :: Val_F1_Micro : 0.6616766467065869 :: Val_F1_Macro : 0.41581006746368143
+[23:33:41] Lang : hi f1_micro : 0.6616766467065869 : f1_macro : 0.41581006746368143
+[23:33:49] Avg validation loss : 1.2178166454488581 :: Val_F1_Micro : 0.5813253012048193 :: Val_F1_Macro : 0.3699902124248103
+[23:33:49] Lang : kn f1_micro : 0.5813253012048193 : f1_macro : 0.3699902124248103
+[23:33:51] Saved the best model 0.7947
+[23:59:43] Epoch 2/5 :: Time taken : 1551.9745104312897 | Loss: 0.2638 | Acc: 83.18%
+[00:00:47] Avg validation loss : 0.20010239627436363 :: Val_F1_Micro : 0.8327247025562493 :: Val_F1_Macro : 0.8528562823522692
+[00:00:47] Lang : en f1_micro : 0.8327247025562493 : f1_macro : 0.8528562823522692
+[00:00:53] Avg validation loss : 0.26512073319066654 :: Val_F1_Micro : 0.7634730538922155 :: Val_F1_Macro : 0.7992341934506122
+[00:00:53] Lang : hi f1_micro : 0.7634730538922155 : f1_macro : 0.7992341934506122
+[00:01:02] Avg validation loss : 0.44920826432379807 :: Val_F1_Micro : 0.6686746987951807 :: Val_F1_Macro : 0.7422424533206413
+[00:01:02] Lang : kn f1_micro : 0.6686746987951807 : f1_macro : 0.7422424533206413
+[00:01:04] Saved the best model 0.8529
+[00:28:11] Epoch 3/5 :: Time taken : 1626.897230386734 | Loss: 0.2270 | Acc: 83.89%
+[00:29:15] Avg validation loss : 0.17755372534485014 :: Val_F1_Micro : 0.8361408882082695 :: Val_F1_Macro : 0.8577763147946313
+[00:29:15] Lang : en f1_micro : 0.8361408882082695 : f1_macro : 0.8577763147946313
+[00:29:22] Avg validation loss : 0.18836712363091382 :: Val_F1_Micro : 0.7694610778443114 :: Val_F1_Macro : 0.8270565723282183
+[00:29:22] Lang : hi f1_micro : 0.7694610778443114 : f1_macro : 0.8270565723282183
+[00:29:30] Avg validation loss : 0.26585090024904773 :: Val_F1_Micro : 0.7469879518072289 :: Val_F1_Macro : 0.8275770647684256
+[00:29:30] Lang : kn f1_micro : 0.7469879518072289 : f1_macro : 0.8275770647684256
+[00:29:33] Saved the best model 0.8578
+[01:00:36] Epoch 4/5 :: Time taken : 1863.0538341999054 | Loss: 0.1975 | Acc: 84.34%
+[01:01:37] Avg validation loss : 0.18094217130578213 :: Val_F1_Micro : 0.839910472376016 :: Val_F1_Macro : 0.8674792242790524
+[01:01:37] Lang : en f1_micro : 0.839910472376016 : f1_macro : 0.8674792242790524
+[01:01:44] Avg validation loss : 0.1439258869398724 :: Val_F1_Micro : 0.8203592814371258 :: Val_F1_Macro : 0.8720137748594529
+[01:01:44] Lang : hi f1_micro : 0.8203592814371258 : f1_macro : 0.8720137748594529
+[01:01:52] Avg validation loss : 0.2408376502042467 :: Val_F1_Micro : 0.8132530120481928 :: Val_F1_Macro : 0.8718552164603927
+[01:01:52] Lang : kn f1_micro : 0.8132530120481928 : f1_macro : 0.8718552164603927
+[01:01:54] Saved the best model 0.8675
