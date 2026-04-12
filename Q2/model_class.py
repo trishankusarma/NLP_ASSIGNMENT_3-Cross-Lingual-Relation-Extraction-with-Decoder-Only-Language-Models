@@ -9,7 +9,7 @@ class ModelClass(nn.Module):
 
         self.base_model = AutoModelForCausalLM.from_pretrained(
             hyper_parameters.model_name,
-            dtype=torch.bfloat16
+            dtype=torch.float16
         )
 
         if apply_lora:
