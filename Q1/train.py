@@ -27,6 +27,12 @@ config = PartAConfig()
 LABEL_2_INDEX_PATH = "./label_mapping/label2index.json"
 INDEX_2_LABEL_PATH = "./label_mapping/index2label.json"
 
+Q1_LANG_MAX_LENGTHS = {
+    'en'  : 142,
+    'hi'  : 400,
+    'kn'  : 512
+}
+
 def set_seed(seed=42):
     random.seed(seed)
     np.random.seed(seed)
@@ -42,7 +48,26 @@ def load_label_index_mappings(index2labelPath, label2indexPath):
     
     return index2label, label2index
 
-def flatten_data(train_data, label2index, pairs):
+def collate_fn(batch):
+    """Simple stack — safe because single-language batches have same shape."""
+    return {
+        "input_ids"      : torch.stack([b["input_ids"]      for b in batch]),
+        "attention_mask" : torch.stack([b["attention_mask"]  for b in batch]),
+        "entity_map1"    : torch.stack([b["entity_map1"]     for b in batch]),
+        "entity_map2"    : torch.stack([b["entity_map2"]     for b in batch]),
+        "label"          : torch.stack([b["label"]           for b in batch]),
+    }
+
+def make_loader(pairs, tokenizer, special_tokens, max_length, batch_size, shuffle=True):
+    dataset = DatasetWrapper(pairs, tokenizer, special_tokens, max_length=max_length)
+    return DataLoader(
+        dataset, batch_size=batch_size,
+        shuffle=shuffle, num_workers=0,
+        pin_memory=True, collate_fn=collate_fn,
+    )
+
+def flatten_data(train_data, label2index):
+    pairs = []
     for sample in train_data:
         for rel in sample["relationMentions"]:
             label = rel["label"]
@@ -62,23 +87,19 @@ def flatten_data(train_data, label2index, pairs):
 
     return pairs
 
-def find_max_length(pairs, tokenizer, special_tokens):
-    lengths = []
-    
-    for pair in pairs:
-
-        sentence = update_sentence(pair["sentText"], pair["em1Text"], pair["em2Text"], special_tokens)
-        
-        tokens = tokenizer(sentence, truncation=False)
-        lengths.append(len(tokens["input_ids"]))
-    
-    lengths = sorted(lengths)
-    print(f"95th percentile: {lengths[int(0.95 * len(lengths))]}")
-    print(f"99th percentile: {lengths[int(0.99 * len(lengths))]}")
-
-    max_length = lengths[int(0.99 * len(lengths))] + lengths[int(0.99 * len(lengths))]%2
-    print(f"Max_length : {max_length}")
-    return max_length
+def round_robin_epoch(loaders):
+    """Yield batches in round-robin across loaders until all exhausted."""
+    iterators = [iter(l) for l in loaders]
+    active    = list(range(len(loaders)))
+    while active:
+        next_active = []
+        for i in active:
+            try:
+                yield next(iterators[i])
+                next_active.append(i)
+            except StopIteration:
+                pass
+        active = next_active
 
 def get_class_weight(pairs, label2index, num_labels):
     label_counter = Counter()
@@ -141,34 +162,51 @@ def main(args):
     print(f"Number of index2label-keys : {len(index2label)} and label2index-keys : {len(label2index)}")
 
     # Step 3: Flatten to pairs {'sentText' , 'em1Text', 'em2Text', 'label', 'label_id'} # for each label
-    train_pairs = []
-    train_pairs = flatten_data(train_english_data, label2index, train_pairs)
-    train_pairs = flatten_data(train_hindi_data, label2index, train_pairs)
-    train_pairs = flatten_data(train_kanada_data, label2index, train_pairs)
+    en_pairs = flatten_data(train_english_data, label2index)
+    hi_pairs = flatten_data(train_hindi_data, label2index)
+    kn_pairs = flatten_data(train_kanada_data, label2index)
 
-    valid_pairs = []
-    valid_pairs = flatten_data(valid_english_data, label2index, valid_pairs)
-    print(f"Total number of train-pairs {len(train_pairs)} and valid-pairs {len(valid_pairs)}")
+    valid_pairs = flatten_data(valid_english_data, label2index)
+    print(f"en:{len(en_pairs)} hi:{len(hi_pairs)} kn:{len(kn_pairs)} valid:{len(valid_pairs)}")
 
     # Step 4: Get class weight for each labeled imbalanced data
-    class_weights = get_class_weight(train_pairs, label2index, num_labels).to(device)
+    all_train_pairs = en_pairs + hi_pairs + kn_pairs
+    class_weights = get_class_weight(all_train_pairs, label2index, num_labels).to(device)
 
     # Step 5: Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(config.model_name)
     special_tokens = ["[EM1]", "[/EM1]", "[EM2]", "[/EM2]"]
     tokenizer.add_special_tokens({"additional_special_tokens": special_tokens})
 
-    # Step 5.1 :: Think something on how we can handle the tokenizer length
-    max_length = find_max_length(train_pairs, tokenizer, special_tokens)
+    # Step 6: Per-language loaders — each has fixed max_length
+    en_loader = make_loader(en_pairs, tokenizer, special_tokens, Q1_LANG_MAX_LENGTHS['en'], config.batch_size)      # 16
+    hi_loader = make_loader(hi_pairs, tokenizer, special_tokens, Q1_LANG_MAX_LENGTHS['hi'], config.batch_size // 2) # 8
+    kn_loader = make_loader(kn_pairs, tokenizer, special_tokens, Q1_LANG_MAX_LENGTHS['kn'], config.batch_size // 4) # 4
 
-    # Step 6: Tokenize the dataset using the loaded tokenizer
-    train_dataset = DatasetWrapper(train_pairs, tokenizer, special_tokens, max_length = max_length)
-    valid_dataset = DatasetWrapper(valid_pairs, tokenizer, special_tokens, max_length = max_length)
+    train_loaders   = [en_loader, hi_loader, kn_loader]
+    steps_per_epoch = sum(len(l) for l in train_loaders)
+    print(f"Steps per epoch: {steps_per_epoch:,}")
 
-    train_loader = DataLoader(train_dataset, batch_size=config.batch_size,
-                              shuffle=True, num_workers=0, pin_memory=True)
-    valid_loader = DataLoader(valid_dataset, batch_size=config.batch_size*2,
-                              shuffle=False, num_workers=0, pin_memory=True)
+    # Validation — English only (as per assignment: Q1 evaluated on en/hi/kn)
+    en_valid_loader = make_loader(valid_pairs, tokenizer, special_tokens,
+                               Q1_LANG_MAX_LENGTHS['en'], config.batch_size * 2, shuffle=False)
+    hi_valid_loader = make_loader(hi_pairs, tokenizer, special_tokens,
+                               Q1_LANG_MAX_LENGTHS['hi'], config.batch_size * 2, shuffle=False)
+    kn_valid_loader = make_loader(kn_pairs, tokenizer, special_tokens,
+                               Q1_LANG_MAX_LENGTHS['kn'], config.batch_size * 2, shuffle=False)
+
+    valid_loaders = [en_valid_loader, hi_valid_loader, kn_valid_loader]
+
+    os.makedirs(args.output_dir, exist_ok = True)
+    # might be needing this during inference
+    # Save config
+    config_to_save = {
+        "lang_max_lengths" : Q1_LANG_MAX_LENGTHS,
+        "num_labels"       : len(index2label)
+    }
+
+    with open(os.path.join(args.output_dir, "train_config.json"), "w") as f:
+        json.dump(config_to_save, f)
 
     # Step 7: Build model using LORA
     print(f"Building model with {config.model_name} and LORA fine tuning")
@@ -185,35 +223,34 @@ def main(args):
         lr=config.lr,
         weight_decay=config.weight_decay
     )
-    total_steps = len(train_loader) * config.epochs
+    total_steps = steps_per_epoch * config.epochs
     scheduler = CosineAnnealingLR(optimizer, T_max=total_steps)
 
     best_val_f1 = 0
-    os.makedirs(args.output_dir, exist_ok = True)
-    # might be needing this during inference
-    config_to_save = {
-        "max_length": max_length,
-        "num_labels": len(index2label)
-    }
-    with open(os.path.join(args.output_dir, "train_config.json"), "w") as f:
-        json.dump(config_to_save, f)
     
     train_losses = []
     train_accs = []
     val_f1_score_micro = []
     val_f1_score_macro = []
 
+    lang_codes = ['en', 'hi', 'kn']
+
     # Step 9: Train the model
     for epoch in range(config.epochs):
         model.train()
         total_loss = 0
         correct_points = 0
+        step_count = 0
         total_points = 0
         loss_window = [] # will be maintaining a loss window of size 500
         start_time = time.time()
 
-        pbar = tqdm(train_loader, desc=f"Epoch {epoch+1} Training")
-        for step, batch in enumerate(pbar):
+        pbar = tqdm(
+            round_robin_epoch(train_loaders),
+            total=steps_per_epoch,
+            desc=f"Epoch {epoch+1} Training"
+        )
+        for batch in pbar:
             input_ids = batch["input_ids"].to(device)
             attention_mask = batch["attention_mask"].to(device)
             entity_map1 = batch["entity_map1"].to(device)
@@ -233,11 +270,13 @@ def main(args):
             correct_points += (preds == label).sum().item()
             total_points += label.size(0)
 
+            step_count += 1
+
             loss_window.append(loss.item())
             if len(loss_window) > 500:
                 loss_window.pop(0)
         
-            if (step+1) % 100 == 0 or (step+1) == len(train_loader):
+            if step_count % 100 == 0 or step_count == steps_per_epoch:
                 recent_loss = sum(loss_window) / len(loss_window)
                 train_losses.append(recent_loss)
                 train_accs.append(100 * correct_points / total_points)
@@ -248,17 +287,23 @@ def main(args):
                 })
 
         print(f"Epoch {epoch+1}/{config.epochs} :: Time taken : {time.time()-start_time} | "
-                   f"Loss: {total_loss/(len(train_loader)):.4f} | "
+                   f"Loss: {total_loss/step_count:.4f} | "
                    f"Acc: {100*correct_points/total_points:.2f}%")
 
         # Step 9.1 : Evaluate model after every epoch
-        f1_micro, f1_macro = evaluate_task(model, valid_loader, device)
-        val_f1_score_micro.append(f1_micro)
-        val_f1_score_macro.append(f1_macro)
+        f1_macro_consider = 0 
+        for index, valid_loader in enumerate(valid_loaders):
+            f1_micro, f1_macro = evaluate_task(model, valid_loader, device)
+            print(f"Lang : {lang_codes[index]} f1_micro : {f1_micro} : f1_macro : {f1_macro}")
 
-        if f1_macro >= best_val_f1:
+            if index == 0:
+                val_f1_score_micro.append(f1_micro)
+                val_f1_score_macro.append(f1_macro)
+                f1_macro_consider = f1_macro
 
-            best_val_f1 = f1_macro
+        if f1_macro_consider >= best_val_f1:
+
+            best_val_f1 = f1_macro_consider
             # Now we need to save 3 things :: 1. Fine tuned model weights 2. Classifier weights 3. Tokenizer used
             model.base_model.save_pretrained(
                 os.path.join(args.output_dir, "lora_adapter"),
