@@ -17,6 +17,7 @@ from .model_class import ModelClass
 from .evaluate import evaluate_loss, run_all_f1
 from .stage_1_train import run_cpt
 from .infer import load_valid_labels
+from .preTokenizer import pretokenize_and_save
 
 config = PartBConfig()
 
@@ -24,7 +25,7 @@ LANG_MAX_LENGTHS = {
     'en'  : 142,
     'hi'  : 400,
     'kn'  : 512,
-    'or'  : 512,
+    'or'  : 750,
     'tcy' : 512,
 }
 
@@ -51,23 +52,20 @@ def flatten_pairs(data):
     return samples
 
 def collate_fn(batch):
-    """Simple stack — safe because single-language batches have same shape."""
-    batch = [b for b in batch if (b["labels"] != -100).sum() > 0]
-    if len(batch) == 0:
-        return None
+    # No filtering needed — pretokenizer already removed bad samples
     return {
         "input_ids"      : torch.stack([b["input_ids"]      for b in batch]),
         "attention_mask" : torch.stack([b["attention_mask"]  for b in batch]),
         "labels"         : torch.stack([b["labels"]          for b in batch]),
     }
 
-def make_loader(pairs, tokenizer, max_length, batch_size, shuffle=True):
-    """max_length stored once at dataset level — not per sample."""
-    dataset = DatasetWrapper(pairs, tokenizer, max_length=max_length)
+def make_loader(save_path, batch_size, shuffle=True):
+    dataset = DatasetWrapper(save_path)
     return DataLoader(
         dataset, batch_size=batch_size,
-        collate_fn=collate_fn,
-        shuffle=shuffle, num_workers=0, pin_memory=True
+        shuffle=shuffle,
+        num_workers=0, 
+        pin_memory=True,
     )
 
 def round_robin_epoch(loaders):
@@ -130,14 +128,18 @@ def main(args):
     oria_train_data    = load_jsonl(args.oria_train_file)
     tulu_valid_data    = load_jsonl(args.tulu_valid_file)
 
-    # Step 4: Flatten — no max_length in samples
+    # Step 4.1: Flatten — no max_length in samples
     eng_pairs = flatten_pairs(english_train_data)
     hi_pairs  = flatten_pairs(hindi_train_data)
     kn_pairs  = flatten_pairs(kannada_train_data)
     or_pairs  = flatten_pairs(oria_train_data)
     tcy_pairs = flatten_pairs(tulu_valid_data)
 
-    # Upsample Indic 10x
+    # Step 4.2: Pre-tokenize and save
+    CACHE_DIR = os.path.join(args.output_dir, "tokenized_cache")
+    os.makedirs(CACHE_DIR, exist_ok=True)
+
+    # Upsample Indic 1x
     hi_pairs_up  = hi_pairs  * 1
     kn_pairs_up  = kn_pairs  * 1
     or_pairs_up  = or_pairs  * 1
@@ -146,37 +148,49 @@ def main(args):
     print(f"Pairs — en:{len(eng_pairs)} hi:{len(hi_pairs_up)} "
           f"kn:{len(kn_pairs_up)} or:{len(or_pairs_up)} tcy:{len(tcy_pairs_up)}")
 
-    # Step 5: Per-language DataLoaders — max_length at dataset level
-    en_loader  = make_loader(eng_pairs,    tokenizer, LANG_MAX_LENGTHS['en'],  config.batch_size)
-    hi_loader  = make_loader(hi_pairs_up,  tokenizer, LANG_MAX_LENGTHS['hi'],  config.batch_size)
-    kn_loader  = make_loader(kn_pairs_up,  tokenizer, LANG_MAX_LENGTHS['kn'],  config.batch_size)
-    or_loader  = make_loader(or_pairs_up,  tokenizer, LANG_MAX_LENGTHS['or'],  config.batch_size)
-    tcy_loader = make_loader(tcy_pairs_up, tokenizer, LANG_MAX_LENGTHS['tcy'], config.batch_size)
+    lang_pairs = {
+        'en'  : (eng_pairs,  LANG_MAX_LENGTHS['en']),
+        'hi'  : (hi_pairs_up,   LANG_MAX_LENGTHS['hi']),
+        'kn'  : (kn_pairs_up,   LANG_MAX_LENGTHS['kn']),
+        'or'  : (or_pairs_up,   LANG_MAX_LENGTHS['or']),
+        'tcy' : (tcy_pairs_up,  LANG_MAX_LENGTHS['tcy']),
+    }
+
+    for lang, (pairs, max_len) in lang_pairs.items():
+        pretokenize_and_save(
+            pairs, tokenizer, max_len,
+            save_path=os.path.join(CACHE_DIR, f"train_{lang}.pt")
+        )
+    
+    # Validation sets
+    for lang, (data, max_len) in [
+        ('en_valid',  (eng_valid_data,    LANG_MAX_LENGTHS['en'])),
+        ('hi_valid',  (hindi_train_data,  LANG_MAX_LENGTHS['hi'])),
+        ('kn_valid',  (kannada_train_data,LANG_MAX_LENGTHS['kn'])),
+        ('or_valid',  (oria_train_data,   LANG_MAX_LENGTHS['or'])),
+        ('tcy_valid', (tulu_valid_data,   LANG_MAX_LENGTHS['tcy'])),
+    ]:
+        pretokenize_and_save(
+            flatten_pairs(data), tokenizer, max_len,
+            save_path=os.path.join(CACHE_DIR, f"{lang}.pt")
+        )
+
+    # Step 5: DataLoaders — load from cache
+    # Training loaders
+    en_loader  = make_loader(os.path.join(CACHE_DIR, "train_en.pt"),  config.batch_size)
+    hi_loader  = make_loader(os.path.join(CACHE_DIR, "train_hi.pt"),  config.batch_size)
+    kn_loader  = make_loader(os.path.join(CACHE_DIR, "train_kn.pt"),  config.batch_size)
+    or_loader  = make_loader(os.path.join(CACHE_DIR, "train_or.pt"),  config.batch_size)
+    tcy_loader = make_loader(os.path.join(CACHE_DIR, "train_tcy.pt"), config.batch_size)
+    
+    # Validation loaders
+    eng_valid_loader  = make_loader(os.path.join(CACHE_DIR, "en_valid.pt"),  config.batch_size * 4, shuffle=False)
+    hindi_valid_loader  = make_loader(os.path.join(CACHE_DIR, "hi_valid.pt"),  config.batch_size * 4, shuffle=False)
+    kanada_valid_loader = make_loader(os.path.join(CACHE_DIR, "kn_valid.pt"), config.batch_size * 4, shuffle=False)
+    oria_valid_loader   = make_loader(os.path.join(CACHE_DIR, "or_valid.pt"),  config.batch_size * 4, shuffle=False)
+    tulu_valid_loader   = make_loader(os.path.join(CACHE_DIR, "tcy_valid.pt"), config.batch_size * 4, shuffle=False)
 
     train_loaders = [en_loader, hi_loader, kn_loader, or_loader, tcy_loader]
-
-    # Validation loaders
-    eng_valid_loader  = make_loader(
-        flatten_pairs(eng_valid_data),  tokenizer,
-        LANG_MAX_LENGTHS['en'],  config.batch_size * 4, shuffle=False
-    )
-    hindi_valid_loader = make_loader(
-        flatten_pairs(hindi_train_data), tokenizer,
-        LANG_MAX_LENGTHS['hi'], config.batch_size * 4, shuffle=False
-    )
-    kanada_valid_loader = make_loader(
-        flatten_pairs(kannada_train_data), tokenizer,
-        LANG_MAX_LENGTHS['kn'], config.batch_size * 4, shuffle=False
-    )
-    oria_valid_loader = make_loader(
-        flatten_pairs(oria_train_data), tokenizer,
-        LANG_MAX_LENGTHS['or'], config.batch_size * 4, shuffle=False
-    )
-    tulu_valid_loader = make_loader(
-        flatten_pairs(tulu_valid_data), tokenizer,
-        LANG_MAX_LENGTHS['tcy'], config.batch_size * 4, shuffle=False
-    )
-
     valid_loaders = [eng_valid_loader, hindi_valid_loader, kanada_valid_loader, oria_valid_loader, tulu_valid_loader]
 
     steps_per_epoch = sum(len(l) for l in train_loaders)
@@ -219,14 +233,6 @@ def main(args):
         )
         model.base_model.enable_adapter_layers() 
         model.base_model.print_trainable_parameters()  # ← verify params are trainable
-        model = model.to(device)
-        run_all_f1(
-            model, tokenizer,
-            eng_valid_data, hindi_train_data, kannada_train_data,
-            oria_train_data, tulu_valid_data,
-            valid_labels, lang_maps, device, config, LANG_MAX_LENGTHS,
-            tag=f"[Epoch 0]"
-        )
     else:
         print("[SFT] No Stage 1 adapter — applying fresh LoRA")
         lora_config = LoraConfig(
@@ -251,11 +257,12 @@ def main(args):
     )
     scheduler = CosineAnnealingLR(
         optimizer,
-        T_max=steps_per_epoch * config.epochs
+        T_max=(steps_per_epoch // config.grad_accumulation_steps) * config.epochs
     )
     best_val_loss = float('inf')
     lang_codes = ['en', 'hi', 'kn', 'or', 'tcy']
     # Step 8 : train the model for stage 2
+
     for epoch in range(config.epochs):
         model.train()
         total_loss = 0
@@ -267,6 +274,8 @@ def main(args):
             total=steps_per_epoch,
             desc=f"Epoch {epoch+1} Training"
         )
+        optimizer.zero_grad()
+        
         for batch in pbar:
             if batch is None:
                 continue
@@ -275,19 +284,29 @@ def main(args):
             attention_mask = batch["attention_mask"].to(device)
             labels         = batch["labels"].to(device)
 
-            optimizer.zero_grad()
             outputs = model(input_ids, attention_mask, labels)
-            loss    = outputs.loss
+            loss    = outputs.loss / config.grad_accumulation_steps
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
-            optimizer.step()
-            scheduler.step()
+            
+            # Only update every grad_accumulation_steps
+            if (step_count + 1) % config.grad_accumulation_steps == 0:
+                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+                optimizer.step()
+                scheduler.step()
+                optimizer.zero_grad()
 
-            total_loss += loss.item()
+            total_loss += loss.item() * config.grad_accumulation_steps
             step_count += 1
 
             if step_count % 100 == 0 or step_count == steps_per_epoch:
                 pbar.set_postfix({"loss": f"{total_loss/step_count:.4f}"})
+        
+        # Handle remaining gradients at end of epoch
+        if step_count % config.grad_accumulation_steps != 0:
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+            optimizer.step()
+            scheduler.step()
+            optimizer.zero_grad()
 
         print(f"Epoch {epoch+1}/{config.epochs} :: "
               f"Time: {time.time()-start_time:.1f}s | "

@@ -16,67 +16,50 @@ def build_target(label):
     # The target the model should generate after 'Answer:
     return f'{{"label": "{label}"}}'
 
+# For inference it will still be the same 
 class DatasetWrapper(Dataset):
-    # Each item is a (prompt + target) string for causal LM training.
-    # We only compute loss on the TARGET tokens (not the prompt).
-    def __init__(self, samples, tokenizer, max_length=172, inference=False):
-        self.tokenizer = tokenizer
-        self.max_length = max_length
-        self.samples = samples
-        self.inference = inference
- 
+    def __init__(self, samples_or_path, tokenizer=None, 
+                 max_length=172, inference=False):
+        
+        if isinstance(samples_or_path, str):
+            # Load pre-tokenized training data
+            data = torch.load(samples_or_path, weights_only=True)
+            self.input_ids      = data["input_ids"]
+            self.attention_mask = data["attention_mask"]
+            self.labels         = data["labels"]
+            self.pretokenized   = True
+        else:
+            # Inference mode — tokenize on the fly
+            self.samples      = samples_or_path
+            self.tokenizer    = tokenizer
+            self.max_length   = max_length
+            self.inference    = inference
+            self.pretokenized = False
+
     def __len__(self):
+        if self.pretokenized:
+            return len(self.input_ids)
         return len(self.samples)
- 
+
     def __getitem__(self, idx):
-        sample = self.samples[idx]
-
-        if self.inference:
-            prompt = sample['prompt']
-            enc = self.tokenizer(
-                prompt,
-                max_length     = self.max_length,
-                truncation     = True,
-                padding        = 'max_length',
-                return_tensors = 'pt'
-            )
+        if self.pretokenized:
             return {
-                "input_ids"      : enc["input_ids"].squeeze(0),
-                "attention_mask" : enc["attention_mask"].squeeze(0),
+                "input_ids"      : self.input_ids[idx],
+                "attention_mask" : self.attention_mask[idx],
+                "labels"         : self.labels[idx],
             }
-
-        prompt, target = sample['prompt'], sample['target']
-        full_text = prompt + target
- 
-        # Tokenize full text
-        full_text_encode = self.tokenizer(
-            full_text,
-            max_length=self.max_length,
-            truncation=True,
-            padding='max_length',
-            return_tensors='pt'
-        )
- 
-        # Tokenize prompt only (to find where target starts)
-        prompt_encode = self.tokenizer(
+        
+        # Inference path — same as before
+        sample = self.samples[idx]
+        prompt = sample['prompt']
+        enc = self.tokenizer(
             prompt,
-            truncation=False,
-            return_tensors='pt'
+            max_length     = self.max_length,
+            truncation     = True,
+            padding        = 'max_length',
+            return_tensors = 'pt'
         )
-
-        input_ids      = full_text_encode["input_ids"].squeeze(0)
-        attention_mask = full_text_encode["attention_mask"].squeeze(0)
-        labels         = input_ids.clone()
-
-        prompt_len = min(prompt_encode["input_ids"].shape[1], self.max_length)
-
-        # mask prompt and padding
-        # don't compute loss on them :: PyTorch CrossEntropyLoss ignores positions where label == -100
-        labels[:prompt_len]          = -100
-        labels[attention_mask == 0]  = -100
-
         return {
-            "input_ids":      input_ids,
-            "attention_mask": attention_mask,
-            "labels":         labels
+            "input_ids"      : enc["input_ids"].squeeze(0),
+            "attention_mask" : enc["attention_mask"].squeeze(0),
         }
