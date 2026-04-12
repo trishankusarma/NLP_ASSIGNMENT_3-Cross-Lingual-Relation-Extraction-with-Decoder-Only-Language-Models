@@ -1,0 +1,223 @@
+markdown# Assignment 3: Cross-Lingual Relation Extraction
+**Course:** COL7372  
+**Entry Number:** 2025AIY7584
+
+---
+
+## Honor Code
+Even though I have taken help from Claude (Anthropic LLM) in terms of discussing 
+ideas and coding practices, all my code is written by me.
+
+---
+
+## Task 1: Relation Extraction with Classification Head
+
+### Approach
+- **Base Model:** Qwen/Qwen2.5-1.5B (frozen) with LoRA adapters (r=16, α=32)
+- **Entity Marking:** Special tokens `[EM1]/[/EM1]` and `[EM2]/[/EM2]` inserted 
+  around entity spans in the sentence
+- **Pooling Strategy:** Mean pooling over entity token positions (entity-aware 
+  pooling) for both E1 and E2 separately, then concatenated → `[e1; e2]` of 
+  size `2 × hidden_size` fed to linear classifier
+- **Training Data:** English NYT-10 + Hindi (200) + Kannada (200), with Indic 
+  labels mapped back to English
+- **Class Imbalance:** Inverse frequency class weights in CrossEntropyLoss
+- **Per-Language Max Lengths:** English=142, Hindi=400, Kannada=512 tokens
+- **Per-Language Batch Sizes:** English=16, Hindi=8, Kannada=4
+- **Round-Robin Training:** Separate DataLoader per language, batches interleaved 
+  in round-robin to avoid cross-language padding waste
+- **Optimizer:** AdamW (lr=2e-4, weight_decay=0.01) + CosineAnnealingLR
+- **Epochs:** 3, Best checkpoint saved by Macro-F1 on English validation set
+
+### Results
+| Language | Micro-F1 | Macro-F1 |
+|---|---|---|
+| English | 0.8399 | 0.8674 |
+| Hindi | 0.8203 | 0.8720 |
+| Kannada | 0.8132 |  0.8718 |
+
+---
+
+## Task 2: Relation Extraction via Autoregressive Generation
+
+### Approach
+
+#### Stage 1: Continued Pre-Training (CPT)
+- Fine-tuned Qwen2.5-1.5B with LoRA on raw Indic Wikipedia text
+- Languages: Hindi (163k articles), Kannada (31k), Oriya (17k), Tulu (2.2k)
+- First 1000 chars per article, max_length=256, lr=5e-5
+- Goal: teach the model Indic language patterns before relation extraction
+
+#### Stage 2: Supervised Fine-Tuning (SFT)
+- Loads CPT adapter, then fine-tunes on relation extraction task
+- **Prompt format:**
+Task: Extract the relationship between the two entities in the sentence.
+Sentence: <sent>
+Entity1: <e1>
+Entity2: <e2>
+Answer: {"label": "<relation>"}
+- Loss computed only on target tokens (prompt masked with -100)
+- Indic labels (Hindi/Kannada) mapped back to English before training
+- Oriya/Tulu labels already in English — used directly
+
+#### Key Design Choices
+- **Pre-tokenization cache:** All data tokenized once and saved to disk as `.pt` 
+  files — eliminates tokenization overhead during training
+- **Per-language max lengths:** en=142, hi=400, kn=512, or=750, tcy=512
+- **Per-language batch sizes:** en=8, hi=4, kn=4, or=2, tcy=4
+- **Round-robin DataLoaders:** One loader per language, batches interleaved — 
+  no cross-language padding waste, predictable memory usage
+- **Upsampling:** Indic data upsampled 1x (no upsampling) — English corpus 
+  dominates naturally at 94k vs ~1k Indic
+- **Gradient accumulation:** steps=1 (effective batch same as per-language batch)
+- **Optimizer:** AdamW (lr=1e-4) + CosineAnnealingLR
+- **Epochs:** 5, Best checkpoint saved by overall validation loss
+
+#### Post-Processing
+Three-strategy label extraction from generated text:
+1. JSON parse `{"label": "..."}` 
+2. Direct string match against valid label set
+3. Regex path pattern `/word/word/word`
+
+### Results
+| Language | Micro-F1 | Macro-F1 |
+|---|---|---|
+| English | 0.8406 | 0.8228 |
+| Hindi | 0.7994 | 0.7844 |
+| Kannada | 0.7560 | 0.7449 |
+| Oriya | 0.6557 | 0.6660 |
+| Tulu | 0.6029 | 0.6075 |
+
+---
+
+## Task 3: In-Context Learning
+
+### Approach
+- **Base Model:** Meta-Llama-3.1-8B-Instruct (no gradient updates)
+- **Inference Engine:** vLLM for efficient batch generation
+- **Example Retrieval:** FAISS with `paraphrase-multilingual-MiniLM-L12-v2` 
+  sentence embeddings — retrieves most semantically similar labeled examples 
+  to each test query
+
+#### Example Pool
+- Always includes 5000 sampled English examples (covers all 24 relation types)
+- Also includes all available target-language examples:
+  - Hindi: 200 examples (labels normalized to English)
+  - Kannada: 200 examples (labels normalized to English)  
+  - Oriya: 89 examples (labels already English)
+  - Tulu: 95 examples (labels already English)
+
+#### Shot Count per Language
+Based on token length analysis to avoid context window overflow (4096 limit):
+```python
+SHOTS_PER_LANG = {'hi': 5, 'kn': 3, 'or': 2, 'tcy': 5}
+```
+Oriya reduced to 2 shots because Oriya sentences are very long (~1000 tokens) 
+and 5-shot prompts were exceeding the 4096 token limit causing truncation.
+
+#### Prompt Format
+You are an expert in relation extraction. Given a sentence and two entities,
+identify the relationship. Respond ONLY with JSON: {"label": "<relation>"}.
+Example 1:
+Sentence: ...
+Entity1: ...
+Entity2: ...
+Answer: {"label": "/location/country/capital"}
+[... k examples ...]
+Now extract:
+Sentence: <test_sent>
+Entity1: <e1>
+Entity2: <e2>
+Answer:
+
+#### Label Mapping
+- Model always predicts English labels
+- Hindi/Kannada predictions mapped to Indic script via `*_map.json`
+- Oriya/Tulu predictions kept in English (already English in dataset)
+
+### Results
+| Language | Micro-F1 | Macro-F1 | Shots |
+|---|---|---|---|
+| Hindi | 0.8234 | 0.7846 | 5 |
+| Kannada | 0.8223 | 0.7572 | 3 |
+| Oriya | 0.6885 | 0.7451 | 2 |
+| Tulu | 0.6176 | 0.6636 | 5 |
+
+---
+
+## Environment & Dependencies
+
+### Q1 & Q2
+Python 3.12
+torch==2.6.0
+transformers==4.57.1
+peft==0.18.1
+scikit-learn
+datasets
+
+### Q3
+Python 3.10
+vllm==0.6.1
+sentence-transformers
+faiss-gpu
+
+---
+
+## File Structure
+NLP_A3/
+├── Q1/
+│   ├── train.sh
+│   ├── infer.sh
+│   ├── train.py
+│   ├── infer.py
+│   ├── model_class.py
+│   └── dataset_wrapper.py
+├── Q2/
+│   ├── train.sh
+│   ├── infer.sh
+│   ├── train.py
+│   ├── infer.py
+│   ├── model_class.py
+│   ├── dataset_wrapper.py
+│   ├── evaluate.py
+│   ├── stage_1_train.py
+│   └── preTokenizer.py
+├── Q3/
+│   ├── infer.sh
+│   ├── infer.py
+│   ├── builder.py
+│   └── faiss_retriever.py
+├── hyper_parameters/
+│   └── config.py
+├── utils/
+│   ├── utils.py
+│   ├── logger_class.py
+│   └── plot_utils.py
+├── label_mapping/
+│   ├── label2index.json
+│   ├── index2label.json
+│   ├── hi_map.json
+│   ├── kn_map.json
+│   ├── or_map.json
+│   └── tcy_map.json
+├── en_sft_dataset/
+├── sft_dataset/
+└── eval.py
+
+---
+
+## Execution
+
+### Training
+```bash
+./Q1/train.sh <output_dir>
+./Q2/train.sh <output_dir>
+# Q3 has no training
+```
+
+### Inference
+```bash
+./Q1/infer.sh <en|hi|kn> <test_file> <output_dir>
+./Q2/infer.sh <en|hi|kn|or|tcy> <test_file> <output_dir>
+./Q3/infer.sh <hi|kn|or|tcy> <test_file> <output_dir>
+```

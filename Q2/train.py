@@ -184,11 +184,11 @@ def main(args):
     tcy_loader = make_loader(os.path.join(CACHE_DIR, "train_tcy.pt"), config.batch_size // 3) # 4
     
     # Validation loaders
-    eng_valid_loader  = make_loader(os.path.join(CACHE_DIR, "en_valid.pt"),  config.batch_size * 2, shuffle=False)
-    hindi_valid_loader  = make_loader(os.path.join(CACHE_DIR, "hi_valid.pt"),  config.batch_size * 2, shuffle=False)
-    kanada_valid_loader = make_loader(os.path.join(CACHE_DIR, "kn_valid.pt"), config.batch_size * 2, shuffle=False)
-    oria_valid_loader   = make_loader(os.path.join(CACHE_DIR, "or_valid.pt"),  config.batch_size * 2, shuffle=False)
-    tulu_valid_loader   = make_loader(os.path.join(CACHE_DIR, "tcy_valid.pt"), config.batch_size * 2, shuffle=False)
+    eng_valid_loader  = make_loader(os.path.join(CACHE_DIR, "en_valid.pt"),  config.batch_size, shuffle=False)
+    hindi_valid_loader  = make_loader(os.path.join(CACHE_DIR, "hi_valid.pt"),  config.batch_size, shuffle=False)
+    kanada_valid_loader = make_loader(os.path.join(CACHE_DIR, "kn_valid.pt"), config.batch_size, shuffle=False)
+    oria_valid_loader   = make_loader(os.path.join(CACHE_DIR, "or_valid.pt"),  config.batch_size, shuffle=False)
+    tulu_valid_loader   = make_loader(os.path.join(CACHE_DIR, "tcy_valid.pt"), config.batch_size, shuffle=False)
 
     train_loaders = [en_loader, hi_loader, kn_loader, or_loader, tcy_loader]
     valid_loaders = [eng_valid_loader, hindi_valid_loader, kanada_valid_loader, oria_valid_loader, tulu_valid_loader]

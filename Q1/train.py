@@ -17,7 +17,7 @@ from datetime import datetime
 
 from hyper_parameters.config import PartAConfig
 from utils.utils import load_jsonl
-from utils.plot_utils import plot_metrics
+# from utils.plot_utils import plot_metrics
 from utils.logger_class import logging
 from .dataset_wrapper import DatasetWrapper, update_sentence
 from .model_class import ModelClass
@@ -318,8 +318,8 @@ def main(args):
             )
             print(f"Saved the best model {best_val_f1:.4f}")
     
-    plot_metrics(train_losses, train_accs, val_f1_score_micro, val_f1_score_macro, args.output_dir)
-    print(f"Training completed -- and plots saved")
+    # plot_metrics(train_losses, train_accs, val_f1_score_micro, val_f1_score_macro, args.output_dir)
+    print(f"Training completed")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
