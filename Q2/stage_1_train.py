@@ -80,7 +80,7 @@ def run_cpt(model, tokenizer, device, config, wiki_dir="./wikipedia_dumps"):
     # Separate optimizer for CPT with lower LR
     optimizer = AdamW(
         filter(lambda p: p.requires_grad, model.parameters()),
-        lr           = 5e-5,             # lower than SFT lr
+        lr           = config.stage_1_lr,             # lower than SFT lr
         weight_decay = config.weight_decay
     )
     scheduler = CosineAnnealingLR(optimizer, T_max=len(cpt_loader))

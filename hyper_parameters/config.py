@@ -31,6 +31,9 @@ class PartBConfig:
 
     tulu_valid_data_used: float = 0.75
 
+    # Stage 1
+    stage_1_lr: float = 5e-5
+
 @dataclass
 class PartCConfig:
     model_name: str = "meta-llama/Meta-Llama-3.1-8B-Instruct"
