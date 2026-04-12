@@ -29,3 +29,97 @@
 [22:19:29] Overall  : 0.0430
 [22:19:31] Saved best model (loss=0.0430)
 [22:19:31] --- F1 Scores [Epoch 1] ---
+
+-------------------------------------------------------------------------------------------------
+
+[22:34:08] ======================================================================
+[22:34:08] Logging started at 2026-04-11 22:34:08
+[22:34:08] Log file   : logs/output_Q2.txt
+[22:34:08] ======================================================================
+[22:34:08] Using device cuda
+[22:34:09] path of label mapping label_mapping/hi_map.json
+[22:34:09] path of label mapping label_mapping/kn_map.json
+[22:34:09] Loading all data...
+[22:34:10] Parse error at pos 205393: Expecting value: line 6826 column 1 (char 205393)
+[22:34:10] Pairs — en:94222 hi:334 kn:332 or:122 tcy:136
+[22:34:10] Steps per epoch: 11,895
+[22:34:10] Building model: Qwen/Qwen2.5-1.5B + LoRA
+[22:34:11] [SFT] Loading Stage 1 adapter from Q2/output/lora_adapter_stage_1
+[22:34:11] trainable params: 18,464,768 || all params: 1,562,179,072 || trainable%: 1.1820
+[22:34:18] --- F1 Scores [Epoch 0] ---
+[22:50:38] [en] Micro-F1: 0.0000 | Macro-F1: 0.0000
+[22:51:20] [hi] Micro-F1: 0.0000 | Macro-F1: 0.0000
+[22:52:03] [kn] Micro-F1: 0.0000 | Macro-F1: 0.0000
+[22:52:20] [or] Micro-F1: 0.0000 | Macro-F1: 0.0000
+[22:52:40] [tcy] Micro-F1: 0.0000 | Macro-F1: 0.0000
+[23:33:41] Epoch 1/5 :: Time: 2460.8s | Loss: 0.0379
+[23:34:36] en : Val Loss  : 0.0303
+[23:34:41] hi : Val Loss  : 0.0805
+[23:34:48] kn : Val Loss  : 0.1749
+[23:34:49] or : Val Loss  : 0.3765
+[23:34:52] tcy : Val Loss  : 0.4136
+[23:34:52] Overall  : 0.0486
+[23:34:54] Saved best model (loss=0.0486)
+[23:34:54] --- F1 Scores [Epoch 1] ---
+[23:46:06] [en] Micro-F1: 0.8307 | Macro-F1: 0.8126
+[23:46:46] [hi] Micro-F1: 0.7066 | Macro-F1: 0.5051
+[23:47:23] [kn] Micro-F1: 0.5813 | Macro-F1: 0.3921
+[23:47:40] [or] Micro-F1: 0.1557 | Macro-F1: 0.1083
+[23:47:55] [tcy] Micro-F1: 0.1985 | Macro-F1: 0.1421
+[00:28:55] Epoch 2/5 :: Time: 2459.6s | Loss: 0.0289
+[00:29:49] en : Val Loss  : 0.0279
+[00:29:55] hi : Val Loss  : 0.0509
+[00:30:01] kn : Val Loss  : 0.1089
+[00:30:03] or : Val Loss  : 0.2544
+[00:30:05] tcy : Val Loss  : 0.2303
+[00:30:05] Overall  : 0.0382
+[00:30:09] Saved best model (loss=0.0382)
+[00:30:09] --- F1 Scores [Epoch 2] ---
+[00:46:39] [en] Micro-F1: 0.8343 | Macro-F1: 0.8177
+[00:47:23] [hi] Micro-F1: 0.7754 | Macro-F1: 0.6911
+[00:48:08] [kn] Micro-F1: 0.6898 | Macro-F1: 0.5429
+[00:48:24] [or] Micro-F1: 0.2131 | Macro-F1: 0.1397
+[00:48:43] [tcy] Micro-F1: 0.4559 | Macro-F1: 0.3575
+[01:31:12] Epoch 3/5 :: Time: 2548.4s | Loss: 0.0261
+[01:32:06] en : Val Loss  : 0.0264
+[01:32:12] hi : Val Loss  : 0.0369
+[01:32:18] kn : Val Loss  : 0.0532
+[01:32:20] or : Val Loss  : 0.1381
+[01:32:22] tcy : Val Loss  : 0.1479
+[01:32:22] Overall  : 0.0313
+[01:32:26] Saved best model (loss=0.0313)
+[01:32:26] --- F1 Scores [Epoch 3] ---
+[01:48:19] [en] Micro-F1: 0.8387 | Macro-F1: 0.8315
+[01:48:56] [hi] Micro-F1: 0.7695 | Macro-F1: 0.7522
+[01:49:37] [kn] Micro-F1: 0.6898 | Macro-F1: 0.6215
+[01:49:55] [or] Micro-F1: 0.3197 | Macro-F1: 0.2887
+[01:50:13] [tcy] Micro-F1: 0.4926 | Macro-F1: 0.4387
+[02:31:07] Epoch 4/5 :: Time: 2454.5s | Loss: 0.0242
+[02:32:02] en : Val Loss  : 0.0267
+[02:32:07] hi : Val Loss  : 0.0328
+[02:32:14] kn : Val Loss  : 0.0503
+[02:32:15] or : Val Loss  : 0.0858
+[02:32:18] tcy : Val Loss  : 0.1025
+[02:32:18] Overall  : 0.0299
+[02:32:19] Saved best model (loss=0.0299)
+[02:32:19] --- F1 Scores [Epoch 4] ---
+[02:46:52] [en] Micro-F1: 0.8393 | Macro-F1: 0.8250
+[02:47:29] [hi] Micro-F1: 0.7994 | Macro-F1: 0.7877
+[02:48:07] [kn] Micro-F1: 0.7349 | Macro-F1: 0.6512
+[02:48:23] [or] Micro-F1: 0.3361 | Macro-F1: 0.3700
+[02:48:43] [tcy] Micro-F1: 0.5515 | Macro-F1: 0.5169
+[03:29:34] Epoch 5/5 :: Time: 2451.1s | Loss: 0.0231
+[03:30:28] en : Val Loss  : 0.0282
+[03:30:33] hi : Val Loss  : 0.0288
+[03:30:40] kn : Val Loss  : 0.0301
+[03:30:41] or : Val Loss  : 0.0626
+[03:30:44] tcy : Val Loss  : 0.0619
+[03:30:44] Overall  : 0.0294
+[03:30:48] Saved best model (loss=0.0294)
+[03:30:48] --- F1 Scores [Epoch 5] ---
+[03:44:40] [en] Micro-F1: 0.8400 | Macro-F1: 0.8340
+[03:45:16] [hi] Micro-F1: 0.7994 | Macro-F1: 0.7410
+[03:45:55] [kn] Micro-F1: 0.7590 | Macro-F1: 0.7203
+[03:46:12] [or] Micro-F1: 0.4098 | Macro-F1: 0.3966
+[03:46:30] [tcy] Micro-F1: 0.6103 | Macro-F1: 0.6024
+[03:46:30] Done. Best val loss: 0.0294
