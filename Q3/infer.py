@@ -140,7 +140,7 @@ def main(args):
         pred_map[all_meta[i]] = pred_en
 
     result   = reconstruct_output(test_data, pred_map, lang_map)
-    out_path = os.path.join(args.output_dir, f"output_{args.lang}.jsonl")
+    out_path = os.path.join(args.output_dir, f"Q3_{args.lang}.jsonl")
     with open(out_path, 'w', encoding='utf-8') as f:
         for item in result:
             f.write(json.dumps(item, ensure_ascii=False) + '\n')
