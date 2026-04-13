@@ -139,7 +139,7 @@ def main(args):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device {device}")
 
-    model_configurations = load_model(args.output_dir, args.lang, device)
+    model_configurations = load_model(args.output_dir_model, args.lang, device)
     special_tokens = ["[EM1]", "[/EM1]", "[EM2]", "[/EM2]"]
 
     test_data = load_jsonl(args.test_file)
@@ -169,7 +169,8 @@ def main(args):
     # use that to predict
     outputs = reconstruct_output(test_data, all_pred_map)
 
-    out_path = os.path.join(args.output_dir, f"Q1_{args.lang}.jsonl")
+    os.makedirs(args.output_dir_pred, exist_ok=True)
+    out_path = os.path.join(args.output_dir_pred, f"Q1_{args.lang}.jsonl")
     with open(out_path, 'w', encoding='utf-8') as f:
         for item in outputs:
             f.write(json.dumps(item, ensure_ascii=False) + '\n')
@@ -180,7 +181,8 @@ if __name__ == "__main__":
 
     parser.add_argument("--lang", type=str, required=True)
     parser.add_argument("--test_file", type=str, required=True)
-    parser.add_argument("--output_dir", type=str, required=True)
+    parser.add_argument("--output_dir_pred", type=str, required=True)
+    parser.add_argument("--output_dir_model", type=str, required=True)
 
     args = parser.parse_args()
     logging(s="Q1.infer")
