@@ -2,38 +2,10 @@ import os
 import random
 import torch
 from datasets import load_from_disk
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset, DataLoader, TensorDataset
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from tqdm import tqdm
-
-class CPTDataset(Dataset):
-    """Raw text dataset for causal language modeling — no prompts, no labels."""
-    def __init__(self, texts, tokenizer, max_length=256):
-        self.tokenizer  = tokenizer
-        self.max_length = max_length
-        self.samples    = texts
-
-    def __len__(self):
-        return len(self.samples)
-
-    def __getitem__(self, idx):
-        enc = self.tokenizer(
-            self.samples[idx],
-            max_length     = self.max_length,
-            truncation     = True,
-            padding        = 'max_length',
-            return_tensors = 'pt'
-        )
-        input_ids      = enc["input_ids"].squeeze(0)
-        attention_mask = enc["attention_mask"].squeeze(0)
-        labels         = input_ids.clone()
-        labels[attention_mask == 0] = -100   # ignore padding in loss
-        return {
-            "input_ids"      : input_ids,
-            "attention_mask" : attention_mask,
-            "labels"         : labels,
-        }
 
 def run_cpt(model, tokenizer, device, config, wiki_dir="./wikipedia_dumps"):
     """
@@ -45,7 +17,7 @@ def run_cpt(model, tokenizer, device, config, wiki_dir="./wikipedia_dumps"):
     """
     # Use full corpus for each language
     sample_sizes = {
-        "hi"  : 160000,   # full Hindi Wikipedia
+        "hi"  : 120000,   # use 3/4 th Hindi Wikipedia
         "kn"  : 30000,    # full Kannada Wikipedia
         "or"  : 17375,    # full Oriya Wikipedia
         "tcy" : 2202,     # full Tulu Wikipedia (tiny)
@@ -61,7 +33,7 @@ def run_cpt(model, tokenizer, device, config, wiki_dir="./wikipedia_dumps"):
         n  = min(sample_sizes[lang], len(ds))
         sampled = random.sample(range(len(ds)), n)
         for i in sampled:
-            all_texts.append(ds[i]['text'])
+            all_texts.append(ds[i]['text'][:1000]) # Taking first 1000 characters
         print(f"[CPT] Loaded {n} articles from {lang} Wikipedia")
     
     if not all_texts:
@@ -70,8 +42,36 @@ def run_cpt(model, tokenizer, device, config, wiki_dir="./wikipedia_dumps"):
 
     random.shuffle(all_texts)
     print(f"[CPT] Total CPT articles: {len(all_texts)}")
- 
-    cpt_dataset = CPTDataset(all_texts, tokenizer, max_length=256)
+
+    # Pre-tokenize in chunks
+    print("[CPT] Pre-tokenizing...")
+    chunk_size = 10000
+    all_ids, all_masks, all_labels = [], [], []
+
+    for start in tqdm(range(0, len(all_texts), chunk_size), desc="Pre-tokenizing"):
+        chunk = all_texts[start:start + chunk_size]
+        enc   = tokenizer(
+            chunk,
+            max_length     = 256,
+            truncation     = True,
+            padding        = 'max_length',
+            return_tensors = 'pt',
+        )
+        ids  = enc["input_ids"]
+        mask = enc["attention_mask"]
+        lbl  = ids.clone()
+        lbl[mask == 0] = -100
+        all_ids.append(ids)
+        all_masks.append(mask)
+        all_labels.append(lbl)
+    
+    all_ids    = torch.cat(all_ids)
+    all_masks  = torch.cat(all_masks)
+    all_labels = torch.cat(all_labels)
+    print(f"[CPT] Pre-tokenized {all_ids.shape[0]} samples")
+
+    # ── DataLoader — same batch_size, no change ───────────────
+    cpt_dataset = TensorDataset(all_ids, all_masks, all_labels)
     cpt_loader  = DataLoader(
         cpt_dataset, batch_size=config.batch_size,
         shuffle=True, num_workers=0, pin_memory=True
@@ -90,13 +90,13 @@ def run_cpt(model, tokenizer, device, config, wiki_dir="./wikipedia_dumps"):
     print(f"[CPT] Starting Stage 1: Continued Pre-Training on {len(all_texts)} articles...")
  
     pbar = tqdm(cpt_loader, desc="CPT Stage 1")
-    for step, batch in enumerate(pbar):
-        input_ids      = batch["input_ids"].to(device)
-        attention_mask = batch["attention_mask"].to(device)
-        labels         = batch["labels"].to(device)
+    for step, (ids_b, mask_b, lbl_b) in enumerate(pbar):
+        ids_b  = ids_b.to(device)
+        mask_b = mask_b.to(device)
+        lbl_b  = lbl_b.to(device)
  
         optimizer.zero_grad()
-        outputs = model(input_ids, attention_mask, labels)
+        outputs = model(ids_b, mask_b, lbl_b)
         loss    = outputs.loss
         loss.backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
@@ -106,5 +106,5 @@ def run_cpt(model, tokenizer, device, config, wiki_dir="./wikipedia_dumps"):
         total_loss += loss.item()
         if (step + 1) % 200 == 0:
             pbar.set_postfix({"cpt_loss": f"{total_loss/(step+1):.4f}"})
- 
-    print(f"[CPT] Stage 1 complete. Avg loss: {total_loss/len(cpt_loader):.4f}")
+
+    print(f"[CPT] Done. Avg loss: {total_loss/len(cpt_loader):.4f}")
