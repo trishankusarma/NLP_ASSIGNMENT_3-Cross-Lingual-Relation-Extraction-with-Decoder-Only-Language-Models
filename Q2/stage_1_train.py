@@ -112,7 +112,7 @@ def run_cpt(model, tokenizer, device, config, wiki_dir="./wikipedia_dumps"):
 
         scaler.scale(loss).backward()
         scaler.unscale_(optimizer)
-        torch.nn.utils.clip_grad_norm_(model.parameters(), 0.5)
+        torch.nn.utils.clip_grad_norm_(model.parameters(), 0.8)
         scaler.step(optimizer)
         scaler.update()
         scheduler.step()
