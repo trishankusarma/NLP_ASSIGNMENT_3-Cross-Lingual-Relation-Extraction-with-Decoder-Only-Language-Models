@@ -5,8 +5,8 @@ markdown# Assignment 3: Cross-Lingual Relation Extraction
 ---
 
 ## Honor Code
-Even though I have taken help from Claude (Anthropic LLM) in terms of discussing 
-ideas and coding practices, all my code is written by me.
+Even though I have taken help from Claude (Anthropic LLM) and Gemini in terms of discussing 
+ideas and coding practices, all my analysis and code is written by me.
 
 ---
 
@@ -26,8 +26,8 @@ ideas and coding practices, all my code is written by me.
 - **Per-Language Batch Sizes:** English=16, Hindi=8, Kannada=4
 - **Round-Robin Training:** Separate DataLoader per language, batches interleaved 
   in round-robin to avoid cross-language padding waste
-- **Optimizer:** AdamW (lr=2e-4, weight_decay=0.01) + CosineAnnealingLR
-- **Epochs:** 3, Best checkpoint saved by Macro-F1 on English validation set
+- **Optimizer:** AdamW (lr=1e-4, weight_decay=0.01) + CosineAnnealingLR
+- **Epochs:** 5, Best checkpoint saved by Macro-F1 on English validation set
 
 ### Results
 | Language | Micro-F1 | Macro-F1 |
@@ -221,3 +221,8 @@ NLP_A3/
 ./Q2/infer.sh <en|hi|kn|or|tcy> <test_file> <output_dir>
 ./Q3/infer.sh <hi|kn|or|tcy> <test_file> <output_dir>
 ```
+
+Used this, inside tmux to load conda :
+
+source ~/anaconda3/etc/profile.d/conda.sh
+conda activate skylake_env_2

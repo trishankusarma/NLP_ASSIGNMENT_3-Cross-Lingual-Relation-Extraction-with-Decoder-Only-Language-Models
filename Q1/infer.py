@@ -19,7 +19,7 @@ INDEX_2_LABEL_PATH = "./label_mapping/index2label.json"
 
 config = PartAConfig()
 
-def load_model(output_dir, device):
+def load_model(output_dir, lang, device):
     # Step 1: Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(
         os.path.join(output_dir, "tokenizer")
@@ -29,7 +29,7 @@ def load_model(output_dir, device):
     with open(os.path.join(output_dir, "train_config.json")) as f:
         train_config = json.load(f)
     
-    num_labels, max_length = train_config["num_labels"], train_config["max_length"]
+    num_labels, max_length = train_config["num_labels"], train_config["lang_max_lengths"][lang]
     # Step 3: Load base model
     model = ModelClass(
         hyper_parameters=config,
@@ -139,7 +139,7 @@ def main(args):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device {device}")
 
-    model_configurations = load_model(args.output_dir, device)
+    model_configurations = load_model(args.output_dir, args.lang, device)
     special_tokens = ["[EM1]", "[/EM1]", "[EM2]", "[/EM2]"]
 
     test_data = load_jsonl(args.test_file)
@@ -169,7 +169,7 @@ def main(args):
     # use that to predict
     outputs = reconstruct_output(test_data, all_pred_map)
 
-    out_path = os.path.join(args.output_dir, f"output_{args.lang}.jsonl")
+    out_path = os.path.join(args.output_dir, f"Q1_{args.lang}.jsonl")
     with open(out_path, 'w', encoding='utf-8') as f:
         for item in outputs:
             f.write(json.dumps(item, ensure_ascii=False) + '\n')

@@ -17,7 +17,7 @@ from .dataset_wrapper import build_prompt
 
 config = PartBConfig()
 
-def load_model(output_dir, device):
+def load_model(output_dir, lang, device):
     tokenizer = AutoTokenizer.from_pretrained(
         os.path.join(output_dir, "tokenizer")
     )
@@ -25,7 +25,7 @@ def load_model(output_dir, device):
 
     with open(os.path.join(output_dir, "train_config.json")) as f:
         train_config = json.load(f)
-    max_length = train_config["max_length"]
+    max_length = train_config["lang_max_lengths"][lang]
 
     model = ModelClass(hyper_parameters=config, apply_lora=False)
     model.base_model = PeftModel.from_pretrained(
@@ -159,7 +159,7 @@ def main(args):
     print(f"Using device {device}")
 
     # Load model + tokenizer
-    cfg = load_model(args.output_dir, device)
+    cfg = load_model(args.output_dir, args.lang, device)
     model     = cfg["model"]
     tokenizer = cfg["tokenizer"]
     max_length = cfg["max_length"]
@@ -194,7 +194,7 @@ def main(args):
     output = reconstruct_output(test_data, pred_map)
 
     # Save
-    out_path = os.path.join(args.output_dir, f"output_{args.lang}.jsonl")
+    out_path = os.path.join(args.output_dir, f"Q2_{args.lang}.jsonl")
     with open(out_path, 'w', encoding='utf-8') as f:
         for item in output:
             f.write(json.dumps(item, ensure_ascii=False) + '\n')

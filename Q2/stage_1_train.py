@@ -6,6 +6,7 @@ from torch.utils.data import Dataset, DataLoader, TensorDataset
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from tqdm import tqdm
+from torch.cuda.amp import GradScaler, autocast
 
 def run_cpt(model, tokenizer, device, config, wiki_dir="./wikipedia_dumps"):
     """
@@ -84,9 +85,13 @@ def run_cpt(model, tokenizer, device, config, wiki_dir="./wikipedia_dumps"):
         weight_decay = config.weight_decay
     )
     scheduler = CosineAnnealingLR(optimizer, T_max=len(cpt_loader))
+
+    # ── GradScaler for float16 stability ─────────────────────
+    scaler = GradScaler()
  
     model.train()
     total_loss = 0
+    valid_steps = 0
     print(f"[CPT] Starting Stage 1: Continued Pre-Training on {len(all_texts)} articles...")
  
     pbar = tqdm(cpt_loader, desc="CPT Stage 1")
@@ -96,15 +101,25 @@ def run_cpt(model, tokenizer, device, config, wiki_dir="./wikipedia_dumps"):
         lbl_b  = lbl_b.to(device)
  
         optimizer.zero_grad()
-        outputs = model(ids_b, mask_b, lbl_b)
-        loss    = outputs.loss
-        loss.backward()
-        torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
-        optimizer.step()
+        with autocast():
+            outputs = model(ids_b, mask_b, lbl_b)
+            loss    = outputs.loss
+
+        if torch.isnan(loss) or torch.isinf(loss):
+            print(f"[CPT] Skipping NaN loss at step {step}")
+            scaler.update()
+            continue
+
+        scaler.scale(loss).backward()
+        scaler.unscale_(optimizer)
+        torch.nn.utils.clip_grad_norm_(model.parameters(), 0.5)
+        scaler.step(optimizer)
+        scaler.update()
         scheduler.step()
+        valid_steps += 1
  
         total_loss += loss.item()
         if (step + 1) % 200 == 0:
-            pbar.set_postfix({"cpt_loss": f"{total_loss/(step+1):.4f}"})
+            pbar.set_postfix({"cpt_loss": f"{total_loss/valid_steps:.4f}"})
 
-    print(f"[CPT] Done. Avg loss: {total_loss/len(cpt_loader):.4f}")
+    print(f"[CPT] Done. Avg loss: {total_loss/valid_steps:.4f}")
