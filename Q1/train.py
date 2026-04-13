@@ -190,12 +190,13 @@ def main(args):
     # Validation — English only (as per assignment: Q1 evaluated on en/hi/kn)
     en_valid_loader = make_loader(valid_pairs, tokenizer, special_tokens,
                                Q1_LANG_MAX_LENGTHS['en'], config.batch_size * 2, shuffle=False)
-    hi_valid_loader = make_loader(hi_pairs, tokenizer, special_tokens,
-                               Q1_LANG_MAX_LENGTHS['hi'], config.batch_size * 2, shuffle=False)
-    kn_valid_loader = make_loader(kn_pairs, tokenizer, special_tokens,
-                               Q1_LANG_MAX_LENGTHS['kn'], config.batch_size * 2, shuffle=False)
+    # hi_valid_loader = make_loader(hi_pairs, tokenizer, special_tokens,
+    #                            Q1_LANG_MAX_LENGTHS['hi'], config.batch_size, shuffle=False)
+    # kn_valid_loader = make_loader(kn_pairs, tokenizer, special_tokens,
+    #                            Q1_LANG_MAX_LENGTHS['kn'], config.batch_size, shuffle=False)
 
-    valid_loaders = [en_valid_loader, hi_valid_loader, kn_valid_loader]
+    # valid_loaders = [en_valid_loader, hi_valid_loader, kn_valid_loader]
+    valid_loaders = [en_valid_loader]
 
     os.makedirs(args.output_dir, exist_ok = True)
     # might be needing this during inference

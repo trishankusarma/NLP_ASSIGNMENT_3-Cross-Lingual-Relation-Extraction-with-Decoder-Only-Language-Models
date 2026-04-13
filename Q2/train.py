@@ -328,7 +328,8 @@ def main(args):
         if val_loss < best_val_loss:
             best_val_loss = val_loss
             model.base_model.save_pretrained(
-                os.path.join(args.output_dir, "lora_adapter")
+                os.path.join(args.output_dir, "lora_adapter"),
+                save_embedding_layers=False
             )
             tokenizer.save_pretrained(
                 os.path.join(args.output_dir, "tokenizer")

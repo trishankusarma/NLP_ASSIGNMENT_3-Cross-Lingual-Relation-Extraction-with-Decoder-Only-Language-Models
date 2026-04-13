@@ -159,7 +159,7 @@ def main(args):
     print(f"Using device {device}")
 
     # Load model + tokenizer
-    cfg = load_model(args.output_dir, args.lang, device)
+    cfg = load_model(args.output_dir_model, args.lang, device)
     model     = cfg["model"]
     tokenizer = cfg["tokenizer"]
     max_length = cfg["max_length"]
@@ -194,7 +194,8 @@ def main(args):
     output = reconstruct_output(test_data, pred_map)
 
     # Save
-    out_path = os.path.join(args.output_dir, f"Q2_{args.lang}.jsonl")
+    os.makedirs(args.output_dir_pred, exist_ok=True)
+    out_path = os.path.join(args.output_dir_pred, f"Q2_{args.lang}.jsonl")
     with open(out_path, 'w', encoding='utf-8') as f:
         for item in output:
             f.write(json.dumps(item, ensure_ascii=False) + '\n')
@@ -204,7 +205,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--lang",       type=str, required=True)
     parser.add_argument("--test_file",  type=str, required=True)
-    parser.add_argument("--output_dir", type=str, required=True)
+    parser.add_argument("--output_dir_pred", type=str, required=True)
+    parser.add_argument("--output_dir_model", type=str, required=True)
     args = parser.parse_args()
 
     logging(s="Q2.infer")
