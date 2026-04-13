@@ -337,13 +337,13 @@ def main(args):
             print(f"Saved best model (loss={best_val_loss:.4f})")
 
         # F1 on all languages — uncomment for debugging
-        run_all_f1(
-            model, tokenizer,
-            eng_valid_data, hindi_train_data, kannada_train_data,
-            oria_train_data, tulu_valid_data,
-            valid_labels, lang_maps, device, config, LANG_MAX_LENGTHS,
-            tag=f"[Epoch {epoch+1}]"
-        )
+        # run_all_f1(
+        #     model, tokenizer,
+        #     eng_valid_data, hindi_train_data, kannada_train_data,
+        #     oria_train_data, tulu_valid_data,
+        #     valid_labels, lang_maps, device, config, LANG_MAX_LENGTHS,
+        #     tag=f"[Epoch {epoch+1}]"
+        # )
 
     print(f"\nDone. Best val loss: {best_val_loss:.4f}")
 
