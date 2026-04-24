@@ -9,6 +9,11 @@ def logging(s='1'):
     # If stdout is already a Logger, unwrap to real stdout
     if isinstance(sys.stdout, Logger):
         sys.stdout = sys.stdout.terminal
+    
+    log_dir = 'logs'
+    os.makedirs(log_dir, exist_ok=True)
+
+    log_path = os.path.join(log_dir, f'output_{s}.txt')
 
     # Initialize new logger (always starts fresh)
     current_logger = Logger(log_path)

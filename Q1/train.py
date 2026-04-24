@@ -19,13 +19,13 @@ from hyper_parameters.config import PartAConfig
 from utils.utils import load_jsonl
 # from utils.plot_utils import plot_metrics
 from utils.logger_class import logging
-from .dataset_wrapper import DatasetWrapper, update_sentence
-from .model_class import ModelClass
+from dataset_wrapper import DatasetWrapper, update_sentence
+from model_class import ModelClass
 
 config = PartAConfig()
 
-LABEL_2_INDEX_PATH = "./label_mapping/label2index.json"
-INDEX_2_LABEL_PATH = "./label_mapping/index2label.json"
+LABEL_2_INDEX_PATH = "../label_mapping/label2index.json"
+INDEX_2_LABEL_PATH = "../label_mapping/index2label.json"
 
 Q1_LANG_MAX_LENGTHS = {
     'en'  : 142,

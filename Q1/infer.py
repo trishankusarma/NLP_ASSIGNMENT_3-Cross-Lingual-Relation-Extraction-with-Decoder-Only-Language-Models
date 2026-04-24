@@ -9,13 +9,13 @@ from tqdm import tqdm
 import torch.nn as nn
 
 from hyper_parameters.config import PartAConfig
-from .dataset_wrapper import DatasetWrapper
+from dataset_wrapper import DatasetWrapper
 from utils.utils import load_jsonl, load_lang_map
 from utils.logger_class import logging
-from .model_class import ModelClass
+from model_class import ModelClass
 
-LABEL_2_INDEX_PATH = "./label_mapping/label2index.json"
-INDEX_2_LABEL_PATH = "./label_mapping/index2label.json"
+LABEL_2_INDEX_PATH = "../label_mapping/label2index.json"
+INDEX_2_LABEL_PATH = "../label_mapping/index2label.json"
 
 config = PartAConfig()
 
