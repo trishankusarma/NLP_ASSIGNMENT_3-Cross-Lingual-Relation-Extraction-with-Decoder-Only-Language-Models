@@ -9,18 +9,18 @@ from vllm import LLM, SamplingParams
 
 from utils.logger_class import logging
 from utils.utils import load_jsonl, load_lang_map
-from .builder import build_icl_prompt, parse_label, reconstruct_output
-from .faiss_retriever import FAISSRetriever
+from builder import build_icl_prompt, parse_label, reconstruct_output
+from faiss_retriever import FAISSRetriever
 
 MODEL_PATH       = "/home/scai/msr/aiy247541/scratch/models--meta-llama--Llama-3.1-8B-Instruct/snapshots/0e9e39f249a16976918f6564b8830bc894c89659"
-LABEL2INDEX_PATH = "./label_mapping/label2index.json"
+LABEL2INDEX_PATH = "../label_mapping/label2index.json"
 
-ENGLISH_TRAIN_PATH = "en_sft_dataset/train.jsonl"
-ENGLIGH_VALID_PATH = "en_sft_dataset/valid.jsonl"
-HINDI_TRAIN_PATH = 'sft_dataset/hi_train.jsonl'
-KANADA_TRAIN_PATH = 'sft_dataset/kn_train.jsonl'
-ORIA_TRAIN_PATH = 'sft_dataset/or_train.jsonl'
-TCY_VALID_PATH = 'sft_dataset/tcy_val.jsonl'
+ENGLISH_TRAIN_PATH = "../en_sft_dataset/train.jsonl"
+ENGLIGH_VALID_PATH = "../en_sft_dataset/valid.jsonl"
+HINDI_TRAIN_PATH = '../sft_dataset/hi_train.jsonl'
+KANADA_TRAIN_PATH = '../sft_dataset/kn_train.jsonl'
+ORIA_TRAIN_PATH = '../sft_dataset/or_train.jsonl'
+TCY_VALID_PATH = '../sft_dataset/tcy_val.jsonl'
 
 def load_valid_labels(label2index_path=LABEL2INDEX_PATH):
     with open(label2index_path, encoding='utf-8') as f:
