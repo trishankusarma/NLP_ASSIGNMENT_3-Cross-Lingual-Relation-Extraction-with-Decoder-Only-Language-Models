@@ -59,3 +59,6 @@ class Logger:
     def isatty(self):
         # Critical: tqdm checks this to decide whether to show progress bar
         return self.terminal.isatty()
+
+    def fileno(self): 
+        return self.terminal.fileno()
