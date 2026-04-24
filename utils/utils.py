@@ -35,10 +35,10 @@ def load_lang_map(lang):
         return None
     
     map_paths = {
-        "hi": "label_mapping/hi_map.json",
-        "kn": "label_mapping/kn_map.json",
-        "or": "label_mapping/or_map.json",
-        "tcy": "label_mapping/tcy_map.json"
+        "hi": "../label_mapping/hi_map.json",
+        "kn": "../label_mapping/kn_map.json",
+        "or": "../label_mapping/or_map.json",
+        "tcy": "../label_mapping/tcy_map.json"
     }
     
     path = map_paths.get(lang)

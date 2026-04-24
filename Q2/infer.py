@@ -9,11 +9,11 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from hyper_parameters.config import PartBConfig
-from .dataset_wrapper import DatasetWrapper
+from dataset_wrapper import DatasetWrapper
 from utils.utils import load_jsonl, load_lang_map
 from utils.logger_class import logging
-from .model_class import ModelClass
-from .dataset_wrapper import build_prompt
+from model_class import ModelClass
+from dataset_wrapper import build_prompt
 
 config = PartBConfig()
 
@@ -52,7 +52,7 @@ def flatten_test_data(data):
     return samples
 
 # Load valid English labels once for post-processing
-def load_valid_labels(label2index_path="./label_mapping/label2index.json"):
+def load_valid_labels(label2index_path="../label_mapping/label2index.json"):
     with open(label2index_path, encoding='utf-8') as f:
         label2index = json.load(f)
     # Only English labels (they don't contain non-ASCII scripts)

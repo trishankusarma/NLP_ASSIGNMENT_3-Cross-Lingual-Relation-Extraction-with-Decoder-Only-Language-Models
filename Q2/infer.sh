@@ -5,7 +5,11 @@ TEST_FILE=$2
 OUTPUT_DIR_FOR_PRED=${3:-"Q2/pred"}
 OUTPUT_DIR_FOR_MODEL="Q2/output"
 echo "Task 2 Inference | lang=$LANG | test=$TEST_FILE | out=$OUTPUT_DIR_FOR_PRED"
-python -m Q2.infer \
+
+cd "$(dirname "$0")"
+export PYTHONPATH="$(pwd)/.."
+
+python infer.py \
     --lang $LANG \
     --test_file $TEST_FILE \
     --output_dir_pred $OUTPUT_DIR_FOR_PRED \

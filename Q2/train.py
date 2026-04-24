@@ -12,12 +12,12 @@ from peft import PeftModel, get_peft_model, LoraConfig, TaskType
 from utils.logger_class import logging
 from utils.utils import load_jsonl, load_lang_map
 from hyper_parameters.config import PartBConfig
-from .dataset_wrapper import DatasetWrapper, build_prompt, build_target
-from .model_class import ModelClass
-from .evaluate import evaluate_loss, run_all_f1
-from .stage_1_train import run_cpt
-from .infer import load_valid_labels
-from .preTokenizer import pretokenize_and_save
+from dataset_wrapper import DatasetWrapper, build_prompt, build_target
+from model_class import ModelClass
+from evaluate import evaluate_loss, run_all_f1
+from stage_1_train import run_cpt
+from infer import load_valid_labels
+from preTokenizer import pretokenize_and_save
 
 config = PartBConfig()
 

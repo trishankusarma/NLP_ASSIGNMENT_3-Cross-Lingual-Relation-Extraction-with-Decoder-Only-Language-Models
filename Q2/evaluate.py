@@ -3,8 +3,8 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 from sklearn.metrics import f1_score
 
-from .dataset_wrapper import DatasetWrapper, build_prompt
-from .infer import parse_label
+from dataset_wrapper import DatasetWrapper, build_prompt
+from infer import parse_label
 
 def evaluate_loss(model, valid_loader, device):
     model.eval()
