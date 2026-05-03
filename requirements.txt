@@ -1,13 +1,17 @@
 conda create -n skylake_env_2 python=3.12 -y
 conda activate skylake_env_2
 
-conda install -c conda-forge numpy pyarrow scikit-learn -y
+export PYTHONNOUSERSITE=1
+conda install -c conda-forge \
+    numpy \
+    pyarrow \
+    scikit-learn \
+    datasets \
+    -y
 
 pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 \
 --extra-index-url https://download.pytorch.org/whl/cu124
 
 pip install transformers==4.57.1 peft==0.18.1
-pip install --only-binary=:all: datasets
-pip install scikit-learn
 
 export WANDB_DISABLED="true"
